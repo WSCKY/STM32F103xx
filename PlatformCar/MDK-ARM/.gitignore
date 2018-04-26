@@ -1,0 +1,6 @@
+*.uvguix.*
+Objects/
+DebugConfig/
+*.scvd
+*.txt
+*.ini
