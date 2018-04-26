@@ -1,0 +1,27 @@
+/* Version */
+type: TYPE_VERSION_REQUEST = 0x66  /* Upper Request */
+data[n]:
+请求类型            (1B)       约定为 '0x0F'            (uint8_t)
+
+type: TYPE_VERSION_Response = 0x67  /* Lower Response */
+data[n]:
+控制器版本          (2B)       CTRL_Version             (uint16_t)
+
++------------+
+|     2B     |
++------------+
+| FW_Version |
++------------+
+
+2B bit combined:
+    bit15-bit12 -> Major version(主版本号)
+    bit11-bit8  -> Minor version(副版本号)
+    bit7 -bit0  -> fix number(修正号)
+
+code reference:
+__packed typedef struct {
+	uint16_t FW_Version;
+} VersionResponseDef;
+
+
+                                                                                 kyChu@2018/4/2(V0.2)

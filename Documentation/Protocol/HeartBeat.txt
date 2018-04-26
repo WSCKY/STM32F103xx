@@ -1,0 +1,14 @@
+/* HeartBeat */
+
+type: TYPE_COM_HEARTBEAT = 0x01  /* Upper Request && Lower Response */
+data[n]:
+计数器              (1B)       HeartBeatCnt             (uint8_t)
+
+HeartBeatCnt:
+每100ms发送一次,每发一次 ++1;
+
+coded reference:
+__packed struct{
+	uint8_t Heartbeat;
+} HeartBeatDataDef;
+                                                                                 kyChu@2018/4/2(V1.0)

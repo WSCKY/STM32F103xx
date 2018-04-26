@@ -1,0 +1,48 @@
+/* Device Control Package */
+
+type: TYPE_LED_CTRL_Request = 0x21  /* Upper Request */
+data[n]:
+控制字               (1B)     ControlByte                 (uint8_t)
+
+ControlByte:
++-------------+--------+--------+--------+--------+
+| bit7 - bit4 |  bit3  |  bit2  |  bit1  |  bit0  |
++-------------+--------+--------+--------+--------+
+|     ---     | 电透膜 | 掌纹灯 | 上照明 | 下照明 |
++-------------+--------+--------+--------+--------+
+
+type: TYPE_BAR_MODE_Request = 0x22  /* Upper Request */
+data[n]:
+模式                 (1B)     Mode                        (uint8_t)
+
+Mode: 设置指示灯模式, see LightMode.txt
+
+type: TYPE_DOOR_CTRL_Request = 0x23  /* Upper Request */
+data[n]:
+控制字               (1B)     ControlByte                 (uint8_t)
+
+ControlByte:
++-------------+-------------+
+| bit7 - bit4 | bit3 - bit0 |
++-------------+-------------+
+|     上门    |     下门    |
++-------------+-------------+
+每侧门信息4bit,对应状态如下:
+0      -> 关闭
+1      -> 开启
+5      -> 暂停
+
+code reference:
+__packed typedef struct{
+	uint8_t LEDState;
+} LEDCtrlRequestDef;
+
+__packed typedef struct{
+	uint8_t Mode;
+} BarModeRequestDef;
+
+__packed typedef struct{
+	uint8_t DoorReq;
+} DoorCtrlRequestDef;
+
+                                                                              kyChu@2018/04/02(V0.6)

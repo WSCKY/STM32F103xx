@@ -1,0 +1,52 @@
+/* Device Status Ack */
+
+type: TYPE_DEV_STA_Response = 0x11  /* Lower Response */
+data[n]:
+控制板就绪标志       (1B)     ControllerReady             (uint8_t)
+控制板电压           (4B)     BatteryVoltage              (float)
+二值信号状态         (1B)     BinSigState                 (uint8_t)
+转向灯状态           (1B)     LEDBarState                 (uint8_t)
+上下门开关状态       (1B)     DoorsState                  (uint8_t)
+
+ControllerReady:
++-------------+------+
+| bit7 - bit1 | bit0 |
++-------------+------+
+|     ---     | RDY  |
++-------------+------+    (0为异常,1为正常)
+
+BatteryVoltage: 电压浮点数据四字节拆分,小端模式
+
+BinSigState:
++-------------+--------+--------+--------+--------+--------+
+| bit7 - bit5 |  bit4  |  bit3  |  bit2  |  bit1  |  bit0  |
++-------------+--------+--------+--------+--------+--------+
+|     ---     | PC供电 | 电透膜 | 掌纹灯 | 上照明 | 下照明 |
++-------------+--------+--------+--------+--------+--------+    (0为关,1为开)
+
+LEDBarState:
+ (一字节, 表示当前灯带模式, see LightMode.txt)
+
+DoorsState:
++-------------+-------------+
+| bit7 - bit4 | bit3 - bit0 |
++-------------+-------------+
+|     上门    |     下门    |
++-------------+-------------+
+每侧门信息4bit,对应状态如下:
+0      -> 关闭
+1      -> 开启
+2      -> 关闭中
+3      -> 开启中
+4      -> 开关门异常
+
+code reference:
+__packed typedef struct {
+	uint8_t CtrlReady;
+	float Voltage;
+	uint8_t BinSigState;
+	uint8_t LEDBarState;
+	uint8_t DoorsState;
+} DevStateResponseDef;
+
+                                                                                                                  kyChu@2018/4/2(V0.8)
