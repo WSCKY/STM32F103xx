@@ -1,7 +1,8 @@
 # MiniPlatform_Vehicle
 ### Code for a two wheel vehicle's control system
 
-#### main controller ic: ```
+#### main controller ic:
+```
 STM32F103RCT6, cortex-m3@72MHz, FLASH Size: 256KB, SRAM Size: 64KB.
 STM32F103C8T6, cortex-m3@72MHz, FLASH Size:  64KB, SRAM Size: 20KB.
 ```
