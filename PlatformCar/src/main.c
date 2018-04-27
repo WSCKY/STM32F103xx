@@ -59,7 +59,7 @@ static void SystemStartThread(void const *p)
 	DebugPortInit();
 	MotorDriverInit();
 	EncoderDriverInit();
-//	RemoteControlInit();
+	RemoteControlInit();
 	VoltageMeasureInit();
 
 	CAN_If_Init();

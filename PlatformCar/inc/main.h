@@ -13,6 +13,7 @@
 #include "Battery.h"
 #include "MotorDriver.h"
 #include "SensorGroup.h"
+#include "RemoteController.h"
 
 #include "MainCtrl.h"
 #include "DataMonitor.h"
