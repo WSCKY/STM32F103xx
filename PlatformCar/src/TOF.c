@@ -13,8 +13,6 @@ void TOFDriverInit(void)
 	/* Enable GPIO clock */
   RCC_APB2PeriphClockCmd(TOF_USART_GPIO_CLK | RCC_APB2Periph_AFIO, ENABLE);
 
-	GPIO_PinRemapConfig(GPIO_PartialRemap_USART3, ENABLE);
-
 	/* Configure TOF_USART Rx as input floating */
   GPIO_InitStructure.GPIO_Pin = TOF_USART_RxPin;
 	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
@@ -53,8 +51,8 @@ static void usart_config(void)
 
 	/* Enable the TOF_USART Interrupt */
   NVIC_InitStructure.NVIC_IRQChannel = TOF_USART_IRQn;
-  NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 0;
-  NVIC_InitStructure.NVIC_IRQChannelSubPriority = 3;
+  NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 1;
+  NVIC_InitStructure.NVIC_IRQChannelSubPriority = 0;
   NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
   NVIC_Init(&NVIC_InitStructure);
 

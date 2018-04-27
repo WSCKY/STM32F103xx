@@ -5,14 +5,14 @@
 
 #include "CRC16.h"
 
-#define TOF_USART                    USART3
+#define TOF_USART                    UART4
 #define TOF_USART_GPIO               GPIOC
 #define TOF_USART_GPIO_CLK           RCC_APB2Periph_GPIOC
-#define TOF_USART_CLK                RCC_APB1Periph_USART3
+#define TOF_USART_CLK                RCC_APB1Periph_UART4
 #define TOF_USART_RxPin              GPIO_Pin_11
 #define TOF_USART_TxPin              GPIO_Pin_10
-#define TOF_USART_IRQn               USART3_IRQn
-#define TOF_USART_IRQHandler         USART3_IRQHandler
+#define TOF_USART_IRQn               UART4_IRQn
+#define TOF_USART_IRQHandler         UART4_IRQHandler
 
 __packed typedef struct
 {
