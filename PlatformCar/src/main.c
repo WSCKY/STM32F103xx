@@ -120,6 +120,9 @@ static void DebugSendTimerCallback(void const *p)
 {
 	SendDataToMonitor();
 	SensorGroupSendTask();
+	
+	AppDataProcTask(10);
+	CtrlBoardRespTask(10);
 }
 
 static void MainControlTimerCallback(void const *p)
