@@ -521,6 +521,11 @@
               <FileType>1</FileType>
               <FilePath>..\src\CAN.c</FilePath>
             </File>
+            <File>
+              <FileName>RemoteController.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\src\RemoteController.c</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>
@@ -580,6 +585,16 @@
               <FileName>SensorGroup.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\src\SensorGroup.c</FilePath>
+            </File>
+            <File>
+              <FileName>CommProtocol.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\src\CommProtocol.c</FilePath>
+            </File>
+            <File>
+              <FileName>AppsDataProc.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\src\AppsDataProc.c</FilePath>
             </File>
           </Files>
         </Group>
