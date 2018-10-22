@@ -4,7 +4,7 @@ static uint8_t _init_flag = 0;
 static uint16_t _ctrl_ticks = 0;
 static float MainCtrlLoopDt = 0.0f;
 
-static uint8_t RunEnableFlag = 0;
+static FunctionalState RunEnableFlag = DISABLE;
 //static uint8_t CmdButtonRleased = 0;
 //static uint16_t ButtonConfirmTime = 0;
 //static uint16_t ButtonConfirmTimeCnt = 0;
@@ -16,14 +16,14 @@ static GyrRawDef GyrOffset = {0, 0, 0};
 
 //static float ExpSpeedL = 0, ExpSpeedR = 0;
 ////static TURN_DIR ExpDirL = STOP, ExpDirR = STOP;
-//static float CtrlModeExpVel = 0.0f, CtrlModeExpYaw = 0.0f;
+static float CtrlModeExpVel = 0.0f, CtrlModeExpYaw = 0.0f;
 
 /* private function prototype. */
 static uint8_t IMU_StableCheck(void);
 
-FunctionalState _motor_en = DISABLE;
-int16_t speedL = 0, speedR = 0;
-float *pPWM_L, *pPWM_R;
+//FunctionalState _motor_en = DISABLE;
+//int16_t speedL = 0, speedR = 0;
+static float *pPWM_L, *pPWM_R;
 
 static void MainCtrlLoopInit(void)
 {
@@ -50,6 +50,8 @@ void SystemControlTask(void) /* MAIN_CONTROLLER_LOOP_RATE Hz */
 	if(IMU_Stabled) {
 		FusionIMU_6Axis(MainCtrlLoopDt);
 	}
+
+	CtrlCmdArbitLoop(5);
 /*
 	if(BUTTON_PRESSED()) {
 		if(CmdButtonRleased == 1) {
@@ -78,14 +80,15 @@ void SystemControlTask(void) /* MAIN_CONTROLLER_LOOP_RATE Hz */
 
 	AttitudeControlLoop(-1.8f, RunEnableFlag);
 	SpeedControlLoop(CtrlModeExpVel, RunEnableFlag);
-	YawControlLoop(CtrlModeExpYaw, RunEnableFlag);*/
+	*/
 
-	SpeedControlLoop(speedL, speedR, _motor_en);
+	YawControlLoop(CtrlModeExpYaw, RunEnableFlag);
+	SpeedControlLoop(CtrlModeExpVel + GetYawControllerOutput(), CtrlModeExpVel - GetYawControllerOutput(), RunEnableFlag);
 
 //	if(RunEnableFlag == 0) {
 //		SetRunningDir(STOP, STOP);
 //		SetRunningSpeed(0, 0);
-	SetMotorEnable(_motor_en);
+	SetMotorEnable(RunEnableFlag);
 	SetRunningSpeed((int16_t)*pPWM_L, (int16_t)*pPWM_R);
 //	} else {
 //		GetAttitudeControllerOutput(&ExpSpeedL, &ExpSpeedR); // apply attitude control.
@@ -135,13 +138,12 @@ uint8_t IMU_GotOffset(void)
 	return IMU_Stabled;
 }
 
-uint8_t GetVehicleRunState(void)
-{
-	return RunEnableFlag;
-}
+inline void VehicleRunEnable(void) { RunEnableFlag = ENABLE; }
+inline void VehicleRunDisable(void) { RunEnableFlag = DISABLE; }
+inline uint8_t GetVehicleRunState(void) { return RunEnableFlag; }
 
 void SetUsrCtrlVal(float ExpVel, float ExpYaw)
 {
-//	CtrlModeExpVel = ExpVel;
-//	CtrlModeExpYaw = ExpYaw;
+	CtrlModeExpVel = ExpVel;
+	CtrlModeExpYaw = ExpYaw;
 }

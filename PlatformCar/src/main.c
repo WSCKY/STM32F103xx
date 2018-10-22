@@ -19,8 +19,8 @@
 static osTimerId LEDTimerHandle;
 static osTimerId DebugTimerHandle;
 
-static uint16_t LEDTicksCnt = 0;
-static uint16_t LEDFlashDelay = 0;
+//static uint16_t LEDTicksCnt = 0;
+//static uint16_t LEDFlashDelay = 0;
 /* Private function prototypes ----------------------------------------------*/
 static void SystemStartThread(void const *p);
 static void MainControlSubThread(void const *p);
@@ -57,6 +57,7 @@ static void SystemStartThread(void const *p)
 	MPU6500_Init();
 	TOFDriverInit();
 	DebugPortInit();
+	FreeControlInit();
 	MotorDriverInit();
 	EncoderDriverInit();
 	RemoteControlInit();
@@ -87,40 +88,15 @@ static void SystemStartThread(void const *p)
 
 static void LEDStateTimerCallback(void const *p)
 {
-	static uint8_t div = 0;
-	if(!IMU_GotOffset()) {
-		LEDFlashDelay = LED_STATE_TIMER_RATE / LED_FLASH_RATE_WAIT_STABLE;
-	} else {// if(GetSignalLostFlag())
-		LEDFlashDelay = LED_STATE_TIMER_RATE / LED_FLASH_RATE_SIGNAL_LOST;
-	}// else {
-//		LEDFlashDelay = 0;
-//	}
-
-	if(LEDFlashDelay != 0) {
-		if(LEDTicksCnt % LEDFlashDelay == 0) {
-			if(div == 0) { LED1_TOG(); div ++; }
-			else if(div == 1) { LED2_TOG(); div ++; }
-			else if(div == 2) { LED3_TOG(); div ++; }
-			else if(div == 3) { LED4_TOG(); div = 0; }
-		}
-	} else {
-		if(GetVehicleRunState()) {
-			LED1_ON();
-		} else {
-			LED1_OFF();
-		}
-	}
-
-	LEDTicksCnt ++;
-	if(LEDTicksCnt >= 60000)
-		LEDTicksCnt = 0;
+	SignalProcessTask(10);
+	IndicatorTask(10);
 }
 
 static void DebugSendTimerCallback(void const *p)
 {
 	SendDataToMonitor();
 	SensorGroupSendTask();
-	
+
 	AppDataProcTask(10);
 	CtrlBoardRespTask(10);
 }

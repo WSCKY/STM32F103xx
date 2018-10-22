@@ -1,3 +1,15 @@
+Pin Connection:
+LED(GPIO)          PB12(OUT) PB13(OUT) PB14(OUT) PB15(OUT)
+MPU6500(SPI1)      PA4(NSS) PA5(SCK) PA6(MISO) PA7(MOSI)
+TOF(UART5)         PC12(TX) PD2(RX)
+Debug(USART1)      PB6(TX) PB7(RX)
+Futaba(USART3)     PB10(*TX*) PB11(RX)
+Motor(GPIO+TIM8)   PA12(EN) PC7(AIN) PC9(BIN) PC6(TIM8_CH1) PC8(TIM8_CH3)
+Encoder(TIM2+TIM3) PA0(A) PA1(A) PB4(B) PB5(B)
+WIFI(UART4)        PC10(TX) PC11(RX)
+Voltage(ADC1)      PC1(ADC1_Channel11)
+CAN_If(CAN1)       PB8(RX) PB9(TX)
+
 Control Board Interrupt Priority.
 
 NVIC_PriorityGroup_2: 2 bits for pre-emption priority, 2 bits for subpriority. (4 * 4)
@@ -28,7 +40,7 @@ pre-emption priority -- subpriority -- peripheral -- device
 +---+---+---------------+-------------+
 | 2 | 1 | TIM3          | EncoderB    |
 +---+---+---------------+-------------+
-| 2 | 2 |               |             |
+| 2 | 2 | USART3_RX     | Futaba      |
 +---+---+---------------+-------------+
 | 2 | 3 |               |             |
 +---+---+---------------+-------------+

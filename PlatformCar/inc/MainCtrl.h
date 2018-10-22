@@ -7,11 +7,14 @@
 #include "CAN.h"
 #include "Button.h"
 #include "Encoder.h"
+#include "FreeControl.h"
 #include "MotorDriver.h"
 #include "SensorGroup.h"
 #include "VoltageCheck.h"
+#include "SignalProcess.h"
 #include "pidController.h"
 #include "YawController.h"
+#include "CtrlArbitration.h"
 #include "SpeedController.h"
 #include "AttitudeEstimator.h"
 #include "AttitudeController.h"
@@ -24,6 +27,8 @@
 void SystemControlTask(void);
 
 uint8_t IMU_GotOffset(void);
+void VehicleRunEnable(void);
+void VehicleRunDisable(void);
 uint8_t GetVehicleRunState(void);
 void SetUsrCtrlVal(float ExpVel, float ExpYaw);
 

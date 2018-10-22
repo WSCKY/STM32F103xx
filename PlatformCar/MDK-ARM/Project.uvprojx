@@ -526,6 +526,11 @@
               <FileType>1</FileType>
               <FilePath>..\src\RemoteController.c</FilePath>
             </File>
+            <File>
+              <FileName>FreeControl.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\src\FreeControl.c</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>
@@ -596,6 +601,21 @@
               <FileType>1</FileType>
               <FilePath>..\src\AppsDataProc.c</FilePath>
             </File>
+            <File>
+              <FileName>SignalProcess.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\src\SignalProcess.c</FilePath>
+            </File>
+            <File>
+              <FileName>Indicator.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\src\Indicator.c</FilePath>
+            </File>
+            <File>
+              <FileName>CtrlArbitration.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\src\CtrlArbitration.c</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>
@@ -655,6 +675,16 @@
               <FileName>cmsis_os.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\..\FreeRTOS\CMSIS_RTOS\cmsis_os.c</FilePath>
+            </File>
+          </Files>
+        </Group>
+        <Group>
+          <GroupName>readme</GroupName>
+          <Files>
+            <File>
+              <FileName>rec.txt</FileName>
+              <FileType>5</FileType>
+              <FilePath>..\rec.txt</FilePath>
             </File>
           </Files>
         </Group>

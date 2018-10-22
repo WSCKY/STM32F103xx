@@ -11,12 +11,14 @@
 #include "mpu6500.h"
 #include "Encoder.h"
 #include "Battery.h"
+#include "FreeControl.h"
 #include "MotorDriver.h"
 #include "SensorGroup.h"
 #include "AppsDataProc.h"
 #include "RemoteController.h"
 
 #include "MainCtrl.h"
+#include "Indicator.h"
 #include "DataMonitor.h"
 
 #include "cmsis_os.h"

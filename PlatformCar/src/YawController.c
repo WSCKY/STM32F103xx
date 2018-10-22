@@ -11,9 +11,9 @@ static void ControllerInit(void)
 	pGyr = GetGyrDataPointer();
 
 	YawCtrlPID.dt = (float)YAW_CTRL_RATE_DIV / (float)MAIN_CONTROLLER_LOOP_RATE;
-	YawCtrlPID.kp = 2.0f;
-	YawCtrlPID.ki = 2.0f;
-	YawCtrlPID.I_max = 100.0f;
+	YawCtrlPID.kp = 4.0f;
+	YawCtrlPID.ki = 0.0f;
+	YawCtrlPID.I_max = 400.0f;
 	YawCtrlPID.I_sum = 0.0f;
 }
 
@@ -26,11 +26,13 @@ void YawControlLoop(float ExpYawRate, uint8_t ControllerEnable)
 	}
 
 	if(ControllerTicks % YAW_CTRL_RATE_DIV == 0) {
-		pid_loop(&YawCtrlPID, ExpYawRate, pGyr->gyrZ);
+		YawCtrlPID.Output = ExpYawRate * YawCtrlPID.kp;
+//		pid_loop(&YawCtrlPID, ExpYawRate, 0);//pGyr->gyrZ
 	}
 
 	if(ControllerEnable == 0) {
 		YawCtrlPID.I_sum = 0.0f;
+		YawCtrlPID.Output = 0.0f;
 	}
 
 	ControllerTicks ++;

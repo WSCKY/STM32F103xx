@@ -26,7 +26,7 @@ void DataPackageChkSum(COMM_DATA *pComData)
 		chk += pComData->data[i / 4].c_data[i % 4];
 	pComData->checksum = chk;
 }
-float dist = 0;
+//float dist = 0;
 void SendDataToMonitor(void)
 {
 	if(_init_flag == 0) {
@@ -41,7 +41,7 @@ void SendDataToMonitor(void)
 		return;
 	}
 
-	GetNewTOFData(&dist);
+//	GetNewTOFData(&dist);
 
 	ComDataBuf.ComData.data[0].f_data = pSensor[0]._ult_data.fData;//pAcc->accX;//SpeedFilted_L;//
 	ComDataBuf.ComData.data[1].f_data = pSensor[1]._ult_data.fData;//pAcc->accY;//SpeedFilted_R;//
@@ -51,7 +51,7 @@ void SendDataToMonitor(void)
 	ComDataBuf.ComData.data[5].f_data = pSensor[5]._ult_data.fData;//pGyr->gyrZ;//
 	ComDataBuf.ComData.data[6].f_data = pSensor[6]._ult_data.fData;//pEulerAngle->pitch;//
 	ComDataBuf.ComData.data[7].f_data = pSensor[7]._ult_data.fData;//pEulerAngle->roll;//
-	ComDataBuf.ComData.data[8].f_data = dist;//pEulerAngle->yaw;//
+	ComDataBuf.ComData.data[8].f_data = 0;//dist;//pEulerAngle->yaw;//
 	DataPackageChkSum(&ComDataBuf.ComData);
 
 	DebugPortSendBytesDMA(ComDataBuf.RawData, 40);
