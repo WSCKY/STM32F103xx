@@ -1,0 +1,7 @@
+*.uvguix.*
+*.uvoptx
+*.uvprojx
+Objects/
+DebugConfig/
+*.scvd
+*.txt
