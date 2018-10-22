@@ -1,6 +1,8 @@
 #ifndef __SYSCONFIG_H
 #define __SYSCONFIG_H
 
+#include "stm32f10x.h"
+
 /* main controller loop rate (in Hz) */
 #define MAIN_CONTROLLER_LOOP_RATE      (200)
 
