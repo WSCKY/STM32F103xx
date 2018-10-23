@@ -20,11 +20,11 @@
  *
  */
 
-#include "dw1000_compiler.h"
+//#include "dw1000_compiler.h"
 #include "dw1000_port.h"
-#include "dw1000_board.h"
-#include "periph/gpio.h"
-#include "cpu.h"
+//#include "dw1000_board.h"
+//#include "periph/gpio.h"
+//#include "cpu.h"
 
 uint32_t spiFreq;
 
@@ -48,59 +48,60 @@ void SPI_ConfigFastRate(uint32_t scalingfactor)
 
 void deca_reset(void *arg)
 {
-   NVIC_ClearPendingIRQ(EXT_IRQ);
+	_DW_CLEAR_PENDING_EXT_IRQ();
+//   NVIC_ClearPendingIRQ(EXT_IRQ);
 }
 
-void setup_DW1000RSTnIRQ(int enable)
-{
-    if(enable)
-    {
-        gpio_init_int(DW1000_RSTn,
-                      GPIO_IN_PD,
-                      GPIO_RISING,
-                      deca_reset,
-                      NULL);
+//void setup_DW1000RSTnIRQ(int enable)
+//{
+//    if(enable)
+//    {
+//        gpio_init_int(DW1000_RSTn,
+//                      GPIO_IN_PD,
+//                      GPIO_RISING,
+//                      deca_reset,
+//                      NULL);
 
-        gpio_irq_enable(DW1000_RSTn);
-    }
-    else
-    {
-        gpio_init_int(DW1000_RSTn,
-                      GPIO_IN,
-                      GPIO_RISING,
-                      deca_reset,
-                      NULL);
+//        gpio_irq_enable(DW1000_RSTn);
+//    }
+//    else
+//    {
+//        gpio_init_int(DW1000_RSTn,
+//                      GPIO_IN,
+//                      GPIO_RISING,
+//                      deca_reset,
+//                      NULL);
 
-        gpio_irq_disable(DW1000_RSTn);
-    }
-}
+//        gpio_irq_disable(DW1000_RSTn);
+//    }
+//}
 
-void port_DisableEXT_IRQ(void)
-{
-     NVIC_DisableIRQ(EXT_IRQ);
-}
+//void port_DisableEXT_IRQ(void)
+//{
+//     NVIC_DisableIRQ(EXT_IRQ);
+//}
 
-void port_EnableEXT_IRQ(void)
-{
-     NVIC_EnableIRQ(EXT_IRQ);
-}
+//void port_EnableEXT_IRQ(void)
+//{
+//     NVIC_EnableIRQ(EXT_IRQ);
+//}
 
-void port_SPIx_clear_chip_select(void)
-{
-    gpio_clear(DW1000_SPI_CS);
-}
+//void port_SPIx_clear_chip_select(void)
+//{
+//    gpio_clear(DW1000_SPI_CS);
+//}
 
-void port_SPIx_set_chip_select(void)
-{
-    gpio_set(DW1000_SPI_CS);
-}
+//void port_SPIx_set_chip_select(void)
+//{
+//    gpio_set(DW1000_SPI_CS);
+//}
 
-decaIrqStatus_t port_GetEXT_IRQStatus(void)
-{
-    return NVIC_GetPendingIRQ(EXT_IRQ);
-}
+//decaIrqStatus_t port_GetEXT_IRQStatus(void)
+//{
+//    return NVIC_GetPendingIRQ(EXT_IRQ);
+//}
 
-int port_CheckEXT_IRQ( void)
-{
-   return gpio_read(DECAIRQ);
-}
+//int port_CheckEXT_IRQ( void)
+//{
+//   return gpio_read(DECAIRQ);
+//}

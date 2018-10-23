@@ -20,11 +20,11 @@
  *
  */
 
-#include "dw1000_compiler.h"
+//#include "dw1000_compiler.h"
 #include "dw1000_device_api.h"
 #include "dw1000_instance.h"
 #include "dw1000_port.h"
-#include "dw1000_board.h"
+//#include "dw1000_board.h"
 
 // -------------------------------------------------------------------------------------------------------------------
 

@@ -5,6 +5,10 @@
 
 #include "LED.h"
 #include "Debug.h"
+#include "LogPort.h"
+
+#include "DW1000.h"
+#include "instance_main.h"
 
 #include "MainCtrl.h"
 #if (DEBUG_MODE)

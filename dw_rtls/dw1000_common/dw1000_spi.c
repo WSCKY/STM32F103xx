@@ -22,7 +22,7 @@
 
 #include "dw1000_device_api.h"
 #include "dw1000_port.h"
-#include "dw1000_board.h"
+//#include "dw1000_board.h"
 extern uint32_t spiFreq;
 
 #ifdef RIOT_TREK_DW1000_APP

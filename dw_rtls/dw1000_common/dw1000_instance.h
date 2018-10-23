@@ -471,9 +471,9 @@ int instance_run(void) ;       // returns indication of status report change
 int testapprun(instance_data_t *inst, int message);
 
 // calls the DW1000 interrupt handler
-#ifndef RIOT_TREK_DW1000_APP
-#define instance_process_irq(x)     dwt_isr()  //call device interrupt handler
-#endif
+//#ifndef RIOT_TREK_DW1000_APP
+//#define instance_process_irq(x)     dwt_isr()  //call device interrupt handler
+//#endif
 // configure TX/RX callback functions that are called from DW1000 ISR
 void instance_rxcallback(const dwt_callback_data_t *rxd);
 void instance_txcallback(const dwt_callback_data_t *txd);
@@ -515,13 +515,13 @@ double convertdevicetimetosec(int32 dt);
 #define DWT_PRF_64M_RFDLY   (514.462f)
 #define DWT_PRF_16M_RFDLY   (513.9067f)
 
-#ifndef RIOT_TREK_DW1000_APP
-const uint16 rfDelays[2];
-const uint16 rfDelaysTREK[2];
-const tx_struct txSpectrumConfig[8];
+//#ifndef RIOT_TREK_DW1000_APP
+//const uint16 rfDelays[2];
+//const uint16 rfDelaysTREK[2];
+//const tx_struct txSpectrumConfig[8];
 
-instance_data_t instance_data[NUM_INST] ;
-#endif
+//instance_data_t instance_data[NUM_INST] ;
+//#endif
 
 int instance_peekevent(void);
 

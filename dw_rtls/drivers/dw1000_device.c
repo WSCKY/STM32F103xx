@@ -25,7 +25,8 @@
 #include "dw1000_regs.h"
 #include "dw1000_device_api.h"
 #include "dw1000_port.h"
-#include "xtimer.h"
+//#include "xtimer.h"
+#include <stdio.h>
 
 // Defines for enable_clocks function
 #define FORCE_SYS_XTI  0
@@ -806,7 +807,7 @@ uint16 dwt_readantennadelay(uint8 prf)
  *
  * returns DWT_DECA_SUCCESS for success, or DWT_DECA_ERROR for error
  */
-#pragma GCC optimize ("O3")
+//#pragma GCC optimize ("O3")
 int dwt_writetxdata(uint16 txFrameLength, uint8 *txFrameBytes, uint16 txBufferOffset)
 {
 #ifdef DWT_API_ERROR_CHECK
@@ -858,7 +859,7 @@ int dwt_writetxdata(uint16 txFrameLength, uint8 *txFrameBytes, uint16 txBufferOf
  * returns DWT_DECA_SUCCESS for success, or DWT_DECA_ERROR for error
  *
  */
-#pragma GCC optimize ("O3")
+//#pragma GCC optimize ("O3")
 int dwt_writetxfctrl(uint16 txFrameLength, uint16 txBufferOffset)
 {
 
@@ -907,7 +908,7 @@ int dwt_writetxfctrl(uint16 txFrameLength, uint16 txBufferOffset)
  *
  * no return value
  */
-#pragma GCC optimize ("O3")
+//#pragma GCC optimize ("O3")
 void dwt_readrxdata(uint8 *buffer, uint16 length, uint16 rxBufferOffset)
 {
     dwt_readfromdevice(RX_BUFFER_ID,rxBufferOffset,length,buffer) ;
@@ -993,7 +994,7 @@ void dwt_readdignostics(dwt_rxdiag_t *diagnostics)
  *
  * no return value
  */
-#pragma GCC optimize ("O3")
+//#pragma GCC optimize ("O3")
 void dwt_readtxtimestamp(uint8 * timestamp)
 {
     dwt_readfromdevice(TX_TIME_ID, 0, TX_TIME_TX_STAMP_LEN, timestamp) ; // read bytes directly into buffer
@@ -1010,7 +1011,7 @@ void dwt_readtxtimestamp(uint8 * timestamp)
  *
  * returns high 32-bits of TX timestamp
  */
-#pragma GCC optimize ("O3")
+//#pragma GCC optimize ("O3")
 uint32 dwt_readtxtimestamphi32(void)
 {
     return dwt_read32bitoffsetreg(TX_TIME_ID, 1);
@@ -1027,7 +1028,7 @@ uint32 dwt_readtxtimestamphi32(void)
  *
  * returns low 32-bits of TX timestamp
  */
-#pragma GCC optimize ("O3")
+//#pragma GCC optimize ("O3")
 uint32 dwt_readtxtimestamplo32(void)
 {
     return dwt_read32bitoffsetreg(TX_TIME_ID, 0);
@@ -1045,7 +1046,7 @@ uint32 dwt_readtxtimestamplo32(void)
  *
  * no return value
  */
-#pragma GCC optimize ("O3")
+//#pragma GCC optimize ("O3")
 void dwt_readrxtimestamp(uint8 * timestamp)
 {
     dwt_readfromdevice(RX_TIME_ID, 0, RX_TIME_RX_STAMP_LEN, timestamp) ; //get the adjusted time of arrival
@@ -1061,7 +1062,7 @@ void dwt_readrxtimestamp(uint8 * timestamp)
  * output parameters
  * uint32 rxtimestamp (hi 32-bits of RX timestamp)
  */
-#pragma GCC optimize ("O3")
+//#pragma GCC optimize ("O3")
 uint32 dwt_readrxtimestamphi32(void)
 {
     return dwt_read32bitoffsetreg(RX_TIME_ID, 1);
@@ -1077,7 +1078,7 @@ uint32 dwt_readrxtimestamphi32(void)
  * output parameters
  * uint32 rxtimestamp (lo 32-bits of RX timestamp)
  */
-#pragma GCC optimize ("O3")
+//#pragma GCC optimize ("O3")
 uint32 dwt_readrxtimestamplo32(void)
 {
     return dwt_read32bitoffsetreg(RX_TIME_ID, 0);
@@ -1094,7 +1095,7 @@ uint32 dwt_readrxtimestamplo32(void)
  *
  * returns high 32-bits of system time timestamp
  */
-#pragma GCC optimize ("O3")
+//#pragma GCC optimize ("O3")
 uint32 dwt_readsystimestamphi32(void)
 {
     return dwt_read32bitoffsetreg(SYS_TIME_ID, 1);
@@ -1113,7 +1114,7 @@ uint32 dwt_readsystimestamphi32(void)
  *
  * returns
  */
-#pragma GCC optimize ("O3")
+//#pragma GCC optimize ("O3")
 void dwt_readsystime(uint8 * timestamp)
 {
     dwt_readfromdevice(SYS_TIME_ID, 0, SYS_TIME_LEN, timestamp) ; //get the adjusted time of arrival
@@ -1143,7 +1144,7 @@ void dwt_readsystime(uint8 * timestamp)
  *
  * returns DWT_DECA_SUCCESS for success, or DWT_DECA_ERROR for error
  */
-#pragma GCC optimize ("O3")
+//#pragma GCC optimize ("O3")
 int dwt_writetodevice
 (
     uint16      recordNumber,
@@ -1220,7 +1221,7 @@ int dwt_writetodevice
  *
  * @return DWT_DECA_SUCCESS for success, or DWT_DECA_ERROR for error
  */
-#pragma GCC optimize ("O3")
+//#pragma GCC optimize ("O3")
 int dwt_readfromdevice
 (
     uint16  recordNumber,
@@ -1289,10 +1290,10 @@ int dwt_readfromdevice
  *
  * returns 32 bit register value (success), or DWT_DECA_ERROR for error
  */
-#pragma GCC optimize ("O3")
+//#pragma GCC optimize ("O3")
 uint32 dwt_read32bitoffsetreg(int regFileID,int regOffset)
 {
-    uint32  regval = DWT_ERROR ;
+    uint32  regval = (uint32_t)DWT_ERROR ;
     int     j ;
     uint8   buffer[4] ;
 
@@ -1322,10 +1323,10 @@ uint32 dwt_read32bitoffsetreg(int regFileID,int regOffset)
  *
  * returns 16 bit register value (success), or DWT_DECA_ERROR for error
  */
-#pragma GCC optimize ("O3")
+//#pragma GCC optimize ("O3")
 uint16 dwt_read16bitoffsetreg(int regFileID,int regOffset)
 {
-    uint16  regval = DWT_ERROR ;
+    uint16  regval = (uint16)DWT_ERROR ;
     uint8   buffer[2] ;
 
     int result = dwt_readfromdevice(regFileID,regOffset,2,buffer); // read 2 bytes (16-bits) register into buffer
@@ -1352,7 +1353,7 @@ uint16 dwt_read16bitoffsetreg(int regFileID,int regOffset)
  *
  * returns DWT_DECA_SUCCESS for success, or DWT_DECA_ERROR for error
  */
-#pragma GCC optimize ("O3")
+//#pragma GCC optimize ("O3")
 int dwt_write16bitoffsetreg(int regFileID,int regOffset,uint16 regval)
 {
     int reg;
@@ -1381,7 +1382,7 @@ int dwt_write16bitoffsetreg(int regFileID,int regOffset,uint16 regval)
  *
  * returns DWT_DECA_SUCCESS for success, or DWT_DECA_ERROR for error
  */
-#pragma GCC optimize ("O3")
+//#pragma GCC optimize ("O3")
 int dwt_write32bitoffsetreg(int regFileID,int regOffset,uint32 regval)
 {
     int     j ;
@@ -1671,7 +1672,7 @@ uint32 _dwt_otpsetmrregs(int mode)
     dwt_writetodevice(OTP_IF_ID, OTP_CTRL,1,wr_buf);
 
     // Wait?
-    Sleep(10);
+    osDelay(10);
     // Set Clear Mode sel
     wr_buf[0] = 0x00;
     dwt_writetodevice(OTP_IF_ID,OTP_CTRL+1,1,wr_buf);
@@ -1685,7 +1686,7 @@ uint32 _dwt_otpsetmrregs(int mode)
     //MRB_SEL
     wr_buf[0] = 0x04;
     dwt_writetodevice(OTP_IF_ID,OTP_CTRL+1,1,wr_buf);
-    Sleep(100);
+    osDelay(100);
 
     // Clear mode sel
     wr_buf[0] = 0x00;
@@ -1694,7 +1695,7 @@ uint32 _dwt_otpsetmrregs(int mode)
     wr_buf[0] = 0x00;
     dwt_writetodevice(OTP_IF_ID, OTP_CTRL,1,wr_buf);
 
-    Sleep(10);
+    osDelay(10);
 
     if (((mode&0x0f) == 0x1)||((mode&0x0f) == 0x2))
     {
@@ -1721,7 +1722,7 @@ uint32 _dwt_otpprogword32(uint32 data, uint16 address)
     if((rd_buf[0] & 0x02) != 0x02)
     {
         printf("OTP PROG 32: ERROR VPP NOT OK, programming will fail. Are MR/MRA/MRB set?\n");
-        return DWT_ERROR;
+        return (uint32_t)DWT_ERROR;
     }
 
     // Write the data
@@ -1746,7 +1747,7 @@ uint32 _dwt_otpprogword32(uint32 data, uint16 address)
     otp_done = 0;
     while(otp_done == 0)
     {
-        Sleep(1);
+        osDelay(1);
         dwt_readfromdevice(OTP_IF_ID, OTP_STAT, 1, rd_buf);
 
         if((rd_buf[0] & 0x01) == 0x01)
@@ -1938,7 +1939,7 @@ uint16 dwt_calibratesleepcnt(void)
 
     buf[0] = 0x01;
     dwt_writetodevice(PMSC_ID,PMSC_CTRL0_OFFSET,1,buf);
-    Sleep(1);
+    osDelay(1);
 
     //read the number of XTAL/2 cycles one lposc cycle took.
     // Set up address
@@ -2091,7 +2092,7 @@ int dwt_spicswakeup(uint8 *buff, uint16 length)
 #ifdef RIOT_TREK_DW1000_APP
         xtimer_usleep(5000);
 #else
-        Sleep(5);
+        osDelay(5);
 #endif
      }
     else
@@ -2159,7 +2160,7 @@ int _dwt_loaducodefromrom(void)
     //kick off the LDE load
     dwt_write16bitoffsetreg(OTP_IF_ID, OTP_CTRL, OTP_CTRL_LDELOAD); // set load LDE kick bit
 
-    Sleep(1); // Allow time for code to upload (should take up to 120 us)
+    osDelay(1); // Allow time for code to upload (should take up to 120 us)
 
     //default clocks (ENABLE_ALL_SEQ)
     _dwt_enableclocks(ENABLE_ALL_SEQ); //enable clocks for sequencing
@@ -2890,7 +2891,7 @@ void _dwt_disablesequencing(void) //disable sequencing and go to state "INIT"
  *
  * no return value
  */
-#pragma GCC optimize ("O3")
+//#pragma GCC optimize ("O3")
 void dwt_setdelayedtrxtime(uint32 starttime)
 {
     dwt_write32bitoffsetreg(DX_TIME_ID, 1, starttime) ;
@@ -2912,7 +2913,7 @@ void dwt_setdelayedtrxtime(uint32 starttime)
  *
  * returns DWT_DECA_SUCCESS for success, or DWT_DECA_ERROR for error (e.g. a delayed transmission will fail if the delayed time has passed)
  */
-#pragma GCC optimize ("O3")
+//#pragma GCC optimize ("O3")
 int dwt_starttx(uint8 mode)
 {
     int retval = DWT_SUCCESS ;
@@ -2977,7 +2978,7 @@ int dwt_checkoverrun(void)
 //
 // Force Transceiver OFF
 //
-#pragma GCC optimize ("O3")
+//#pragma GCC optimize ("O3")
 void dwt_forcetrxoff(void)
 {
 #ifndef RIOT_TREK_DW1000_APP
@@ -3090,7 +3091,7 @@ void dwt_setrxmode(int mode, uint8 rxON, uint8 rxOFF)
  *
  * @return DWT_DECA_SUCCESS for success, or DWT_DECA_ERROR for error (e.g. a delayed receive enable will be too far in the future if delayed time has passed (if delayed time is > 8s from now))
  */
-#pragma GCC optimize ("O3")
+//#pragma GCC optimize ("O3")
 int dwt_rxenable(uint8 mode)
 {
     uint16 temp ;
@@ -3362,7 +3363,7 @@ void dwt_softreset(void)
     dwt_writetodevice(PMSC_ID, 0x3, 1, &temp[0]) ;
 
     //DW1000 needs a 10us sleep to let clk PLL lock after reset - the PLL will automatically lock after the reset
-    Sleep(1);
+    osDelay(1);
     //Can also poll the PLL lock flag, but then the SPI needs to be < 3MHz !!
 
     temp[0] |= 0xF0;
@@ -3555,7 +3556,7 @@ uint16 dwt_readtempvbat(uint8 fastSPI)
 
     if(fastSPI == 1)
     {
-        Sleep(1); //if using PLL clocks(and fast SPI rate) then this Sleep is needed
+        osDelay(1); //if using PLL clocks(and fast SPI rate) then this Sleep is needed
         //read voltage and temperature.
         dwt_readfromdevice(TX_CAL_ID, TC_SARL_SAR_LVBAT_OFFSET,2,wr_buf);
     }

@@ -18,11 +18,13 @@
  *  @file    instance.c
  *  @brief   DecaWave application level message exchange for ranging demo
  */
-#include "dw1000_compiler.h"
+//#include "dw1000_compiler.h"
 #include "dw1000_port.h"
 #include "dw1000_device_api.h"
 #include "dw1000_regs.h"
-#include "xtimer.h"
+//#include "xtimer.h"
+#include <math.h>
+#include <string.h>
 
 #include "dw1000_instance.h"
 extern instance_data_t instance_data[NUM_INST];
@@ -228,18 +230,18 @@ int testapprun(instance_data_t *inst, int message)
             inst->done = INST_NOT_DONE_YET;
             inst->instToSleep = FALSE ;
             inst->testAppState = inst->nextState;
-            inst->nextState = 0; //clear
+            inst->nextState = (INST_STATES)0; //clear
             inst->instanceWakeTime = portGetTickCount(); // Record the time count when we wake-up
 #if (DEEP_SLEEP == 1)
             {
-                uint32 x = 0;
+                
 
                 //wake up device from low power mode
                 //NOTE - in the ARM  code just drop chip select for 200us
                 port_SPIx_clear_chip_select();  //CS low
                 instance_data[0].dwIDLE = 0; //reset DW1000 IDLE flag
 
-                xtimer_usleep(500); //workaround changes in decawave
+                osDelay(1);//xtimer_usleep(500); //workaround changes in decawave
                 //dwt_spicswakeup((uint8 *)buf,50); //workaround changes in decawave
 
                 //need to poll to check when the DW1000 is in IDLE, the CPLL interrupt is not reliable
@@ -250,18 +252,19 @@ int testapprun(instance_data_t *inst, int message)
                     //x++;
                 }
                 port_SPIx_set_chip_select();  //CS high
-                xtimer_usleep(1000); //workaround changes in decawave
+                osDelay(1);//xtimer_usleep(1000); //workaround changes in decawave
 
 #ifndef RIOT_TREK_DW1000_APP
                 //!!! NOTE it takes ~35us for the DW1000 to download AON and lock the PLL and be in IDLE state
                 //do some dummy reads of the dev ID register to make sure DW1000 is in IDLE before setting LEDs
-                x = dwt_readdevid(); //dummy read... need to wait for 5 us to exit INIT state (5 SPI bytes @ ~18 MHz)
-                x = dwt_readdevid(); //dummy read... need to wait for 5 us to exit INIT state (5 SPI bytes @ ~18 MHz)
-                x = dwt_readdevid(); //dummy read... need to wait for 5 us to exit INIT state (5 SPI bytes @ ~18 MHz)
-                x = dwt_readdevid(); //dummy read... need to wait for 5 us to exit INIT state (5 SPI bytes @ ~18 MHz)
+                dwt_readdevid(); //dummy read... need to wait for 5 us to exit INIT state (5 SPI bytes @ ~18 MHz)x = 
+                dwt_readdevid(); //dummy read... need to wait for 5 us to exit INIT state (5 SPI bytes @ ~18 MHz)x = 
+                dwt_readdevid(); //dummy read... need to wait for 5 us to exit INIT state (5 SPI bytes @ ~18 MHz)x = 
+                dwt_readdevid(); //dummy read... need to wait for 5 us to exit INIT state (5 SPI bytes @ ~18 MHz)x = 
 
-                x = dwt_readdevid(); //dummy read... need to wait for 5 us to exit INIT state (5 SPI bytes @ ~18 MHz)
+                dwt_readdevid(); //dummy read... need to wait for 5 us to exit INIT state (5 SPI bytes @ ~18 MHz)x = 
 #else
+								uint32 x = 0;
                 do{
                     xtimer_usleep(500); //workaround changes in decawave
                     x = dwt_readdevid(); //dummy read... need to wait for 5 us to exit INIT state (5 SPI bytes @ ~18 MHz)
@@ -279,7 +282,7 @@ int testapprun(instance_data_t *inst, int message)
                 dwt_seteui(inst->eui64);
             }
 #else
-            xtimer_usleep(3000);
+            osDelay(3);//xtimer_usleep(3000);
 #endif
 
             instancesetantennadelays(); //this will update the antenna delay if it has changed
@@ -317,7 +320,7 @@ int testapprun(instance_data_t *inst, int message)
             else //proceed to configuration and transmission of a frame
             {
                 inst->testAppState = inst->nextState;
-                inst->nextState = 0; //clear
+                inst->nextState = (INST_STATES)0; //clear
             }
             break ; // end case TA_TXE_WAIT
 

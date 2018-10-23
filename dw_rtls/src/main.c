@@ -17,14 +17,14 @@
 /* Private macro ------------------------------------------------------------*/
 /* Private variables --------------------------------------------------------*/
 static osTimerId LEDTimerHandle;
-static osTimerId DebugTimerHandle;
+//static osTimerId DebugTimerHandle;
 
 /* Private function prototypes ----------------------------------------------*/
 static void SystemStartThread(void const *p);
 static void MainControlSubThread(void const *p);
 static void LEDStateTimerCallback(void const *p);
-static void DebugSendTimerCallback(void const *p);
-static void MainControlTimerCallback(void const *p);
+//static void DebugSendTimerCallback(void const *p);
+//static void MainControlTimerCallback(void const *p);
 /* Private functions --------------------------------------------------------*/
 
 /**
@@ -51,20 +51,22 @@ int main(void)
 static void SystemStartThread(void const *p)
 {
 	LED_Init();
+	LOGPortInit();
+	DW1000_If_Init();
 
 	osTimerDef(0, LEDStateTimerCallback);
 	LEDTimerHandle = osTimerCreate(osTimer(0), osTimerPeriodic, NULL);
 	osTimerStart(LEDTimerHandle, configTICK_RATE_HZ / LED_STATE_TIMER_RATE);
 
-	osTimerDef(1, DebugSendTimerCallback);
-	DebugTimerHandle = osTimerCreate(osTimer(1), osTimerPeriodic, NULL);
-	osTimerStart(DebugTimerHandle, configTICK_RATE_HZ / DEBUG_DATA_FRAME_RATE);
+//	osTimerDef(1, DebugSendTimerCallback);
+//	DebugTimerHandle = osTimerCreate(osTimer(1), osTimerPeriodic, NULL);
+//	osTimerStart(DebugTimerHandle, configTICK_RATE_HZ / DEBUG_DATA_FRAME_RATE);
 
-	osTimerDef(2, MainControlTimerCallback);
-	DebugTimerHandle = osTimerCreate(osTimer(2), osTimerPeriodic, NULL);
-	osTimerStart(DebugTimerHandle, configTICK_RATE_HZ / MAIN_CONTROLLER_LOOP_RATE);
+//	osTimerDef(2, MainControlTimerCallback);
+//	DebugTimerHandle = osTimerCreate(osTimer(2), osTimerPeriodic, NULL);
+//	osTimerStart(DebugTimerHandle, configTICK_RATE_HZ / MAIN_CONTROLLER_LOOP_RATE);
 
-	osThreadDef(1, MainControlSubThread, osPriorityNormal, 0, configMINIMAL_STACK_SIZE);
+	osThreadDef(1, MainControlSubThread, osPriorityNormal, 0, configMINIMAL_STACK_SIZE * 8);
 	osThreadCreate(osThread(1), NULL);
 
 	vTaskDelete(NULL);
@@ -76,26 +78,27 @@ static void LEDStateTimerCallback(void const *p)
 	LED_TOG();
 }
 
-static void DebugSendTimerCallback(void const *p)
-{
-#if (DEBUG_MODE)
-//	SendDataToMonitor();
-#else
+//static void DebugSendTimerCallback(void const *p)
+//{
+//#if (DEBUG_MODE)
+////	SendDataToMonitor();
+//#else
 
-#endif
-}
+//#endif
+//}
 
-static void MainControlTimerCallback(void const *p)
-{
-	SystemControlTask();
-}
+//static void MainControlTimerCallback(void const *p)
+//{
+////	SystemControlTask();
+//}
 
 static void MainControlSubThread(void const *p)
 {
-	uint32_t PreviousWakeTime = osKernelSysTick();
-	uint32_t DelayTime = configTICK_RATE_HZ / MAIN_CONTROLLER_LOOP_RATE;
+	instance_main();
+//	uint32_t PreviousWakeTime = osKernelSysTick();
+//	uint32_t DelayTime = configTICK_RATE_HZ / MAIN_CONTROLLER_LOOP_RATE;
 	for(;;) {
-		osDelayUntil(&PreviousWakeTime, DelayTime);
+//		osDelayUntil(&PreviousWakeTime, DelayTime);
 	}
 }
 

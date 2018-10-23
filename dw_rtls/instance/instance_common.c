@@ -19,12 +19,13 @@
  *  @brief   DecaWave application level common instance functions
  *
  */
-#include "dw1000_compiler.h"
+//#include "dw1000_compiler.h"
 #include "dw1000_port.h"
-#include "dw1000_board.h"
+//#include "dw1000_board.h"
 #include "dw1000_device_api.h"
 #include "dw1000_regs.h"
-#include "xtimer.h"
+//#include "xtimer.h"
+#include <string.h>
 
 #include "dw1000_instance.h"
 
@@ -76,7 +77,7 @@ double convertdevicetimetosec(int32 dt)
     return f ;
 }
 
-#pragma GCC optimize ("O3")
+//#pragma GCC optimize ("O3")
 int reportTOF(int idx, uint32 tofx)
 {
         double distance ;
@@ -167,7 +168,7 @@ void instancecleardisttableall(void)
 void instancesetrole(int inst_mode)
 {
     // assume instance 0, for this
-    instance_data[0].mode =  inst_mode;                   // set the role
+    instance_data[0].mode =  (INST_MODE)inst_mode;                   // set the role
 }
 
 int instancegetrole(void)
@@ -513,7 +514,7 @@ void instance_backtoanchor(instance_data_t *inst)
 }
 
 
-#pragma GCC optimize ("O3")
+//#pragma GCC optimize ("O3")
 void inst_processrxtimeout(instance_data_t *inst)
 {
 
@@ -586,7 +587,7 @@ void inst_processrxtimeout(instance_data_t *inst)
 //
 // NB: This function is called from the (TX) interrupt handler
 //
-#pragma GCC optimize ("O3")
+//#pragma GCC optimize ("O3")
 void instance_txcallback(const dwt_callback_data_t *txd)
 {
     int instance = 0;
@@ -753,7 +754,7 @@ void ancenablerx(void)
  * @param ancToAncTWR == 1 means that the anchor is ranging to another anchor, if == 0 then ranging to a tag
  *
  */
-#pragma GCC optimize ("O0")
+//#pragma GCC optimize ("O0")
 uint8 anctxorrxreenable(uint16 sourceAddress, int ancToAncTWR)
 {
     uint8 type_pend = DWT_SIG_DW_IDLE;
@@ -1005,7 +1006,7 @@ void ancprepareresponse(uint16 sourceAddress, uint8 srcAddr_index, uint8 fcode_i
  * responds by sending a response frame or re-enables the receiver to await the next frame
  * once the immediate action is taken care of the event is queued up for application to process
  */
-#pragma GCC optimize ("O3")
+//#pragma GCC optimize ("O3")
 void instance_rxcallback(const dwt_callback_data_t *rxd)
 {
     int instance = 0;
@@ -1283,14 +1284,14 @@ void instance_rxcallback(const dwt_callback_data_t *rxd)
     }
 }
 
-#pragma GCC optimize ("O3")
+//#pragma GCC optimize ("O3")
 int instance_peekevent(void)
 {
     int instance = 0;
     return instance_data[instance].dwevent[instance_data[instance].dweventPeek].type; //return the type of event that is in front of the queue
 }
 
-#pragma GCC optimize ("O3")
+//#pragma GCC optimize ("O3")
 void instance_saveevent(event_data_t newevent, uint8 etype)
 {
     int instance = 0;
@@ -1299,7 +1300,7 @@ void instance_saveevent(event_data_t newevent, uint8 etype)
     instance_data[instance].saved_dwevent.type = etype;
 }
 
-#pragma GCC optimize ("O3")
+//#pragma GCC optimize ("O3")
 event_data_t instance_getsavedevent(void)
 {
     int instance = 0;
@@ -1307,7 +1308,7 @@ event_data_t instance_getsavedevent(void)
     return instance_data[instance].saved_dwevent;
 }
 
-#pragma GCC optimize ("O3")
+//#pragma GCC optimize ("O3")
 void instance_putevent(event_data_t newevent, uint8 etype)
 {
     int instance = 0;
@@ -1334,7 +1335,7 @@ void instance_putevent(event_data_t newevent, uint8 etype)
 
 event_data_t dw_event_g;
 
-#pragma GCC optimize ("O3")
+//#pragma GCC optimize ("O3")
 event_data_t* instance_getevent(int x)
 {
     int instance = 0;
@@ -1408,7 +1409,7 @@ void instance_clearevents(void)
 }
 
 // -------------------------------------------------------------------------------------------------------------------
-#pragma GCC optimize ("O3")
+//#pragma GCC optimize ("O3")
 int instance_run(void)
 {
     int instance = 0 ;
@@ -1532,10 +1533,10 @@ void instance_close(void)
     //NOTE - in the ARM  code just drop chip select for 200us
     port_SPIx_clear_chip_select();  //CS low
     //200 us to wake up then waits 5ms for DW1000 XTAL to stabilise
-    xtimer_usleep(1000);
+    osDelay(1);
 
     port_SPIx_set_chip_select();  //CS high
-    xtimer_usleep(5000);
+    osDelay(5);
 
     dwt_entersleepaftertx(0); // clear the "enter deep sleep after tx" bit
 

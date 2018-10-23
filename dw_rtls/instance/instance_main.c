@@ -21,13 +21,16 @@
  */
 
 /* Includes */
-#include "dw1000_compiler.h"
+//#include "dw1000_compiler.h"
 #include "dw1000_port.h"
-#include "dw1000_board.h"
+//#include "dw1000_board.h"
 
 #include "dw1000_instance.h"
-#include "xtimer.h"
-
+#include "instance_main.h"
+#include "dw1000_device_api.h"
+//#include "xtimer.h"
+#include "cmsis_os.h"
+#include <stdio.h>
 #include "dw1000_types.h"
 
 instance_data_t instance_data[NUM_INST] ;
@@ -223,18 +226,20 @@ uint32 inittestapplication(uint8 s1switch)
     {
         port_SPIx_clear_chip_select();  //CS low
         //200 us to wake up then waits 5ms for DW1000 XTAL to stabilise
-        xtimer_usleep(1000);
+			osDelay(1);
+//        xtimer_usleep(1000);
         port_SPIx_set_chip_select();  //CS high
         //200 us to wake up then waits 5ms for DW1000 XTAL to stabilise
-        xtimer_usleep(7000);
+			osDelay(7);
+//        xtimer_usleep(7000);
         devID = instancereaddeviceid() ;
         // SPI not working or Unsupported Device ID
         if(DWT_DEVICE_ID != devID)
-            return(-1) ;
+            return((uint32_t)-1) ;
     }
 
-    result = instance_init() ;
-    if (0 > result) return(-1) ; // Some failure has occurred
+    result = instance_init();
+    if (0 > result) return((uint32_t)-1) ; // Some failure has occurred
 
     SPI_ConfigFastRate(DW1000_SPI_HIGH); //increase SPI to max
     devID = instancereaddeviceid() ;
@@ -242,7 +247,7 @@ uint32 inittestapplication(uint8 s1switch)
     if (DWT_DEVICE_ID != devID)   // Means it is NOT DW1000 device
     {
         // SPI not working or Unsupported Device ID
-        return(-1) ;
+        return((uint32_t)-1) ;
     }
 
     if((s1switch & SWS1_ANC_MODE) == 0)
@@ -327,7 +332,8 @@ void configure_continuous_txspectrum_mode(uint8 s1switch)
     //user has to reset the board to exit mode
     while(1)
     {
-        xtimer_usleep(2000);
+			osDelay(2);
+//        xtimer_usleep(2000);
     }
 
 }
@@ -340,22 +346,23 @@ void configure_continuous_txspectrum_mode(uint8 s1switch)
 extern uint32 starttime[];
 extern int time_idx;
 
-#pragma GCC optimize ("O3")
-int main(void)
+//#pragma GCC optimize ("O3")
+int instance_main(void)
 {
     int rx = 0, Unit = 0, Unitid = 0, Mode = 0;
-    int toggle = 0;
+//    int toggle = 0;
 
 
     while (1)
     {
+			Mode = 0; Unit = 0; Unitid = 0;
         printf("Select the DW1000 Device Configuration\n");
         printf("Select Mode Configuration:  0:Mode-0 1:Mode-1 2:Mode-2 3:Mode-3\n");
-        scanf("%d", &Mode);
+//        scanf("%d", &Mode);
         printf("Select UNIT: 0:TAG 1:ANCHOR \n");
-        scanf(" %d", &Unit);
+//        scanf(" %d", &Unit);
         printf("Enter UNIT ID: 0 t0 2\n");
-        scanf("%d", &Unitid);
+//        scanf("%d", &Unitid);
 
         if( (Unit > 1) || (Unit < 0) || (Mode > 3) || (Mode < 0) || (Unitid > 2) || (Unitid < 0) )
         {
@@ -372,7 +379,7 @@ int main(void)
         }
     }
 
-    dw1000_board_init();
+//    dw1000_board_init();
 
     port_DisableEXT_IRQ(); //disable ScenSor IRQ until we configure the device
 
@@ -449,52 +456,52 @@ int main(void)
             aaddr = instancenewrangeancadd() & 0xf;
             taddr = instancenewrangetagadd() & 0xf;
             rangeTime = instancenewrangetim() & 0xffffffff;
-#if (LCD_UPDATE_ON == 1)
-            //if((dr_mode & 0x1) == 0) //only print for 110k
-            if(printLCDTWRReports + 2000 <= portGetTickCnt())
-            {
-                //anchors will print a range to each tag in sequence with 1 second pause
-                //they will show the last rage to that tag
-                if(instance_mode == ANCHOR)
-                {
-                    int b = 0;
-                    double rangetotag = getTagDist(toggle) ;
+//#if (LCD_UPDATE_ON == 1)
+//            //if((dr_mode & 0x1) == 0) //only print for 110k
+//            if(printLCDTWRReports + 2000 <= portGetTickCnt())
+//            {
+//                //anchors will print a range to each tag in sequence with 1 second pause
+//                //they will show the last rage to that tag
+//                if(instance_mode == ANCHOR)
+//                {
+//                    int b = 0;
+//                    double rangetotag = getTagDist(toggle) ;
 
-                    while(((int) (rangetotag*1000)) == 0) //if 0 then go to next tag
-                    {
-                        if(b > MAX_TAG_LIST_SIZE)
-                            break;
+//                    while(((int) (rangetotag*1000)) == 0) //if 0 then go to next tag
+//                    {
+//                        if(b > MAX_TAG_LIST_SIZE)
+//                            break;
 
-                        toggle++;
-                        if(toggle >= MAX_TAG_LIST_SIZE)
-                            toggle = 0;
+//                        toggle++;
+//                        if(toggle >= MAX_TAG_LIST_SIZE)
+//                            toggle = 0;
 
-                        rangetotag = getTagDist(toggle) ;
-                        b++;
-                    }
+//                        rangetotag = getTagDist(toggle) ;
+//                        b++;
+//                    }
 
-                    ancaddr = instance_anchaddr;
-                    printf("ANCHOR: A%d T%d: %3.2f\n", ancaddr, toggle, rangetotag);
-                    toggle++;
+//                    ancaddr = instance_anchaddr;
+//                    printf("ANCHOR: A%d T%d: %3.2f\n", ancaddr, toggle, rangetotag);
+//                    toggle++;
 
-                    if(toggle >= MAX_TAG_LIST_SIZE)
-                        toggle = 0;
-                }
-                else if(instance_mode == TAG)
-                {
-                    //toggle = 1;
-                    tagaddr = instance_anchaddr;
-                    printf("TAG: T%d  A%d: %3.2f\n", tagaddr, toggle, instancegetidist(toggle));
-                    toggle++;
+//                    if(toggle >= MAX_TAG_LIST_SIZE)
+//                        toggle = 0;
+//                }
+//                else if(instance_mode == TAG)
+//                {
+//                    //toggle = 1;
+//                    tagaddr = instance_anchaddr;
+//                    printf("TAG: T%d  A%d: %3.2f\n", tagaddr, toggle, instancegetidist(toggle));
+//                    toggle++;
 
-                    if(toggle >= MAX_ANCHOR_LIST_SIZE)
-                        toggle = 0;
-                }
+//                    if(toggle >= MAX_ANCHOR_LIST_SIZE)
+//                        toggle = 0;
+//                }
 
-                //update the print time
-                printLCDTWRReports = portGetTickCnt();
-            }
-#endif
+//                //update the print time
+//                printLCDTWRReports = portGetTickCnt();
+//            }
+//#endif
             l = instancegetlcount() & 0xFFFF;
             if(instance_mode == TAG)
             {
@@ -540,5 +547,5 @@ int main(void)
     }
 
 
-    return 0;
+//    return 0;
 }
