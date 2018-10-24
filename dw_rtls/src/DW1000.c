@@ -23,14 +23,20 @@ int DW1000_SPI_Read(uint16_t headerLength, const uint8_t *headerBuffer, uint32_t
 {
 	uint8_t dummy = 0;
 	decaIrqStatus_t stat = decamutexon();
-	_tx_comp_flag = 0;
+	_tx_comp_flag = 0; _rx_comp_flag = 0;
 	_DW_SPI_CS_ENABLE();
 	DMA_InitStructure.DMA_BufferSize     = headerLength;
 	DMA_InitStructure.DMA_MemoryBaseAddr = (uint32_t)headerBuffer;
 	DMA_InitStructure.DMA_DIR            = DMA_DIR_PeripheralDST;
 	DMA_Init(_DW_SPI_Tx_DMA_Channel, &DMA_InitStructure);
+	DMA_InitStructure.DMA_MemoryBaseAddr = (uint32_t)readBuffer;
+	DMA_InitStructure.DMA_BufferSize     = headerLength;
+	DMA_InitStructure.DMA_DIR            = DMA_DIR_PeripheralSRC;
+	DMA_Init(_DW_SPI_Rx_DMA_Channel, &DMA_InitStructure);
 	DMA_Cmd(_DW_SPI_Tx_DMA_Channel, ENABLE);
+	DMA_Cmd(_DW_SPI_Rx_DMA_Channel, ENABLE);
 	while(_tx_comp_flag == 0);
+	while(_rx_comp_flag == 0);
 	_tx_comp_flag = 0; _rx_comp_flag = 0;
 	DMA_InitStructure.DMA_BufferSize     = readlength;
 	DMA_InitStructure.DMA_MemoryBaseAddr = (uint32_t)(&dummy);
@@ -287,7 +293,6 @@ void _DW_SPI_Rx_DMA_IRQHandler(void)
 	if(SET == DMA_GetFlagStatus(DMA1_FLAG_TC2)) {
 		DMA_ClearFlag(DMA1_FLAG_TC2);
 		_rx_comp_flag = 1;
-		_DW_SPI_CS_DISABLE();
 		/* Disable DMA1 SPI Rx Channel */
 		DMA_Cmd(_DW_SPI_Rx_DMA_Channel, DISABLE);
 	}

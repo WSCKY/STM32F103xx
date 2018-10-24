@@ -304,7 +304,7 @@ void instance_process_irq(int x)
 void process_deca_irq(void)
 {
 #ifndef RIOT_TREK_DW1000_APP
-    while(port_CheckEXT_IRQ() == 1); //while IRS line active (ARM can only do edge sensitive interrupts)
+//    while(port_CheckEXT_IRQ() == 1); //while IRS line active (ARM can only do edge sensitive interrupts)
     {
         instance_process_irq(0);
     }
