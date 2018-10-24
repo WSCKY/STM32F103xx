@@ -108,6 +108,24 @@ void setup_DW1000RSTnIRQ(int enable)
 	}
 }
 
+void SPI_ConfigFastRate(uint32_t scalingfactor)
+{
+	uint16_t tmpreg = 0;
+	if(scalingfactor != DW1000_SPI_HIGH && scalingfactor != DW1000_SPI_LOW) return;
+	/* Disable the selected SPI peripheral */
+	_DW_SPI->CR1 &= 0xFFBF;
+	/* Get the SPIx CR1 value */
+	tmpreg = _DW_SPI->CR1;
+	/* Clear BR[2:0] bits */
+	tmpreg &= 0xFFC7;
+	/* Set the scaling bits */
+	tmpreg |= scalingfactor;
+	/* Write to SPIx CR1 */
+	_DW_SPI->CR1 = tmpreg;
+	/* Enable the selected SPI peripheral */
+	_DW_SPI->CR1 |= 0x0040;
+}
+
 /**
   * @brief  Configure SPI peripheral.
 	* @param  None

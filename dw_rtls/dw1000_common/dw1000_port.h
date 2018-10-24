@@ -73,9 +73,6 @@ extern "C" {
 
 //#endif
 
-#define DW1000_SPI_HIGH                10000000
-#define DW1000_SPI_LOW                 1000000
-
 //typedef enum
 //{
 //    LED_PC6,
@@ -89,8 +86,6 @@ extern "C" {
 void __weak process_deca_irq(void);
 
 void SPI_ChangeRate(uint16_t scalingfactor);
-
-void SPI_ConfigFastRate(uint32_t scalingfactor);
 
 unsigned long portGetTickCnt(void);
 

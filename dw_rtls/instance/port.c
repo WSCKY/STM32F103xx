@@ -26,8 +26,6 @@
 //#include "periph/gpio.h"
 //#include "cpu.h"
 
-uint32_t spiFreq;
-
 /* RTT 32 bit variable defined by the platform */
 extern __IO unsigned long time32_incr;
 
@@ -39,11 +37,6 @@ int No_Configuration(void)
 unsigned long portGetTickCnt(void)
 {
     return time32_incr;
-}
-
-void SPI_ConfigFastRate(uint32_t scalingfactor)
-{
-   spiFreq = scalingfactor;
 }
 
 void deca_reset(void *arg)
