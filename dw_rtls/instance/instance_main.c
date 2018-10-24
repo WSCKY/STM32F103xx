@@ -212,77 +212,71 @@ int decarangingmode(uint8 s1switch)
 
 uint32 inittestapplication(uint8 s1switch)
 {
-    uint32 devID ;
-    instanceConfig_t instConfig;
-    int result;
+	uint32 devID ;
+	instanceConfig_t instConfig;
+	int result;
 
-    SPI_ConfigFastRate(DW1000_SPI_LOW);  //max SPI before PLLs configured is ~4M
+	SPI_ConfigFastRate(DW1000_SPI_LOW);  //max SPI before PLLs configured is ~4M
 
-    //this is called here to wake up the device (i.e. if it was in sleep mode before the restart)
-    devID = instancereaddeviceid() ;
-    printf("DW1000 Device Id:%x\n",(unsigned int)devID);
+	//this is called here to wake up the device (i.e. if it was in sleep mode before the restart)
+	devID = instancereaddeviceid();
 
-    if(DWT_DEVICE_ID != devID) //if the read of device ID fails, the DW1000 could be asleep
-    {
-        port_SPIx_clear_chip_select();  //CS low
-        //200 us to wake up then waits 5ms for DW1000 XTAL to stabilise
-			osDelay(1);
+	if(DWT_DEVICE_ID != devID) { //if the read of device ID fails, the DW1000 could be asleep
+		port_SPIx_clear_chip_select();  //CS low
+		//200 us to wake up then waits 5ms for DW1000 XTAL to stabilise
+		osDelay(1);
 //        xtimer_usleep(1000);
-        port_SPIx_set_chip_select();  //CS high
-        //200 us to wake up then waits 5ms for DW1000 XTAL to stabilise
-			osDelay(7);
+		port_SPIx_set_chip_select();  //CS high
+		//200 us to wake up then waits 5ms for DW1000 XTAL to stabilise
+		osDelay(7);
 //        xtimer_usleep(7000);
-        devID = instancereaddeviceid() ;
-        // SPI not working or Unsupported Device ID
-        if(DWT_DEVICE_ID != devID)
-            return((uint32_t)-1) ;
-    }
+		devID = instancereaddeviceid();
+	}
+	printf("DW1000 Device Id:%x\n",(unsigned int)devID);
+	// SPI not working or Unsupported Device ID
+	if(DWT_DEVICE_ID != devID)
+		return((uint32_t)-1) ;
 
-    result = instance_init();
-    if (0 > result) return((uint32_t)-1) ; // Some failure has occurred
+	result = instance_init();
+	if (0 > result) return((uint32_t)-1) ; // Some failure has occurred
 
-    SPI_ConfigFastRate(DW1000_SPI_HIGH); //increase SPI to max
-    devID = instancereaddeviceid() ;
+	SPI_ConfigFastRate(DW1000_SPI_HIGH); //increase SPI to max
+	devID = instancereaddeviceid() ;
 
-    if (DWT_DEVICE_ID != devID)   // Means it is NOT DW1000 device
-    {
-        // SPI not working or Unsupported Device ID
-        return((uint32_t)-1) ;
-    }
+	if (DWT_DEVICE_ID != devID) { // Means it is NOT DW1000 device
+		// SPI not working or Unsupported Device ID
+		return((uint32_t)-1) ;
+	}
 
-    if((s1switch & SWS1_ANC_MODE) == 0)
-    {
-        instance_mode = TAG;
-    }
-    else
-    {
-        instance_mode = ANCHOR;
-    }
+	if((s1switch & SWS1_ANC_MODE) == 0) {
+		instance_mode = TAG;
+	} else {
+		instance_mode = ANCHOR;
+	}
 
-    addressconfigure(s1switch, instance_mode) ;                            // set up initial payload configuration
+	addressconfigure(s1switch, instance_mode) ;                            // set up initial payload configuration
 
-    if((instance_mode == ANCHOR) && (instance_anchaddr > 0x3))
-    {
-        instance_mode = LISTENER;
-    }
+	if((instance_mode == ANCHOR) && (instance_anchaddr > 0x3)) {
+		instance_mode = LISTENER;
+	}
 
-    instancesetrole(instance_mode) ;     // Set this instance role
+	instancesetrole(instance_mode) ;     // Set this instance role
 
-    // get mode selection (index) this has 4 values see chConfig struct initialiser for details.
-    dr_mode = decarangingmode(s1switch);
+	// get mode selection (index) this has 4 values see chConfig struct initialiser for details.
+	dr_mode = decarangingmode(s1switch);
 
-    chan = instConfig.channelNumber = chConfig[dr_mode].channel ;
-    instConfig.preambleCode = chConfig[dr_mode].preambleCode ;
-    instConfig.pulseRepFreq = chConfig[dr_mode].prf ;
-    instConfig.pacSize = chConfig[dr_mode].pacSize ;
-    instConfig.nsSFD = chConfig[dr_mode].nsSFD ;
-    instConfig.sfdTO = chConfig[dr_mode].sfdTO ;
-    instConfig.dataRate = chConfig[dr_mode].datarate ;
-    instConfig.preambleLen = chConfig[dr_mode].preambleLength ;
+	chan = instConfig.channelNumber = chConfig[dr_mode].channel ;
+	instConfig.preambleCode = chConfig[dr_mode].preambleCode ;
+	instConfig.pulseRepFreq = chConfig[dr_mode].prf ;
+	instConfig.pacSize = chConfig[dr_mode].pacSize ;
+	instConfig.nsSFD = chConfig[dr_mode].nsSFD ;
+	instConfig.sfdTO = chConfig[dr_mode].sfdTO ;
+	instConfig.dataRate = chConfig[dr_mode].datarate ;
+	instConfig.preambleLen = chConfig[dr_mode].preambleLength ;
 
-    instance_config(&instConfig, &sfConfig[dr_mode]) ;                  // Set operating channel etc
+	instance_config(&instConfig, &sfConfig[dr_mode]) ;                  // Set operating channel etc
 
-    return devID;
+	return devID;
 }
 /**
 **===========================================================================
@@ -342,9 +336,10 @@ void configure_continuous_txspectrum_mode(uint8 s1switch)
  * @fn      main()
  * @brief   main entry point
 **/
+int rx = 0;
 int instance_main(void)
 {
-    int rx = 0, Unit = 0, Unitid = 0, Mode = 0;
+    int Unit = 0, Unitid = 0, Mode = 0;
 
 		printf("    DW1000 Device Configuration.    \n");
 		printf("Mode Config:  Mode-%d.\n", Mode);
