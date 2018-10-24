@@ -338,67 +338,38 @@ void configure_continuous_txspectrum_mode(uint8 s1switch)
 
 }
 
-
 /*
  * @fn      main()
  * @brief   main entry point
 **/
-extern uint32 starttime[];
-extern int time_idx;
-
-int test_var = 0;
-//#pragma GCC optimize ("O3")
 int instance_main(void)
 {
     int rx = 0, Unit = 0, Unitid = 0, Mode = 0;
-//    int toggle = 0;
 
+		printf("    DW1000 Device Configuration.    \n");
+		printf("Mode Config:  Mode-%d.\n", Mode);
+		printf("       UNIT:  %s.\n", (Unit)? "ANCHOR":"TAG");
+		printf("    UNIT ID:  %d.\n", Unitid);
 
-    while (1)
-    {
-			Mode = 0; Unit = 0; Unitid = 0;
-        printf("Select the DW1000 Device Configuration\n");
-        printf("Select Mode Configuration:  0:Mode-0 1:Mode-1 2:Mode-2 3:Mode-3\n");
-//        scanf("%d", &Mode);
-        printf("Select UNIT: 0:TAG 1:ANCHOR \n");
-//        scanf(" %d", &Unit);
-        printf("Enter UNIT ID: 0 t0 2\n");
-//        scanf("%d", &Unitid);
+		if(Unitid == 1) Unitid = 4;
 
-        if( (Unit > 1) || (Unit < 0) || (Mode > 3) || (Mode < 0) || (Unitid > 2) || (Unitid < 0) )
-        {
-            printf(" User Input is invalid !!!\n");
-            continue;
-        }
-        else
-        {
-            if(Unitid == 1)
-                Unitid = 4;
-
-            s1switch = 0x01 | ( Unit << 3 ) | ( Mode << 1) | ( Unitid  << 4 );
-            break;
-        }
-    }
+		s1switch = 0x01 | ( Unit << 3 ) | ( Mode << 1) | ( Unitid  << 4 );
 
 //    dw1000_board_init();
 
     port_DisableEXT_IRQ(); //disable ScenSor IRQ until we configure the device
 
     //run DecaRangeRTLS application for TREK
-    {
-        if(inittestapplication(s1switch) == (uint32)-1)
-        {
-            printf(" inittestapllication  failed\n");
-            return 0; //error
-        }
+		if(inittestapplication(s1switch) == (uint32)-1) {
+				printf(" inittestapllication  failed\n");
+				return 0; //error
+		}
 
-        // Is continuous spectrum test mode selected?
-        if((s1switch & SWS1_TXSPECT_MODE) == SWS1_TXSPECT_MODE)
-        {
-            //this function does not return!
-            configure_continuous_txspectrum_mode(s1switch);
-        }
-    }
+		// Is continuous spectrum test mode selected?
+		if((s1switch & SWS1_TXSPECT_MODE) == SWS1_TXSPECT_MODE) {
+				//this function does not return!
+				configure_continuous_txspectrum_mode(s1switch);
+		}
 
     port_EnableEXT_IRQ(); //enable ScenSor IRQ before starting
 
