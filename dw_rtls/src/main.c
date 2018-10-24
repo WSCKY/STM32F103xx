@@ -72,10 +72,12 @@ static void SystemStartThread(void const *p)
 	vTaskDelete(NULL);
 	for(;;);
 }
-
+uint8_t break_flag = 0;
 static void LEDStateTimerCallback(void const *p)
 {
-	LED_TOG();
+	LED1_TOG();
+	if(break_flag)
+		LED2_TOG();
 }
 
 //static void DebugSendTimerCallback(void const *p)
@@ -95,6 +97,7 @@ static void LEDStateTimerCallback(void const *p)
 static void MainControlSubThread(void const *p)
 {
 	instance_main();
+	break_flag = 1;
 	uint32_t PreviousWakeTime = osKernelSysTick();
 	uint32_t DelayTime = configTICK_RATE_HZ / MAIN_CONTROLLER_LOOP_RATE;
 	for(;;) {

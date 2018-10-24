@@ -346,6 +346,7 @@ void configure_continuous_txspectrum_mode(uint8 s1switch)
 extern uint32 starttime[];
 extern int time_idx;
 
+int test_var = 0;
 //#pragma GCC optimize ("O3")
 int instance_main(void)
 {
@@ -405,7 +406,7 @@ int instance_main(void)
     while(1)
     {
         int monitor_local = instance_data[0].monitor ;
-        int txdiff = (portGetTickCnt() - instance_data[0].timeofTx);
+        int txdiff = (portGetTickCount() - instance_data[0].timeofTx);
 
         instance_run();
         instance_mode = instancegetrole();
