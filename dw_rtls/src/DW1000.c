@@ -27,6 +27,7 @@ int DW1000_SPI_Read(uint16_t headerLength, const uint8_t *headerBuffer, uint32_t
 	_DW_SPI_CS_ENABLE();
 	DMA_InitStructure.DMA_BufferSize     = headerLength;
 	DMA_InitStructure.DMA_MemoryBaseAddr = (uint32_t)headerBuffer;
+	DMA_InitStructure.DMA_MemoryInc      = DMA_MemoryInc_Enable;
 	DMA_InitStructure.DMA_DIR            = DMA_DIR_PeripheralDST;
 	DMA_Init(_DW_SPI_Tx_DMA_Channel, &DMA_InitStructure);
 	DMA_InitStructure.DMA_BufferSize     = headerLength;
@@ -34,8 +35,8 @@ int DW1000_SPI_Read(uint16_t headerLength, const uint8_t *headerBuffer, uint32_t
 	DMA_InitStructure.DMA_MemoryInc      = DMA_MemoryInc_Disable;
 	DMA_InitStructure.DMA_DIR            = DMA_DIR_PeripheralSRC;
 	DMA_Init(_DW_SPI_Rx_DMA_Channel, &DMA_InitStructure);
-	DMA_Cmd(_DW_SPI_Tx_DMA_Channel, ENABLE);
 	DMA_Cmd(_DW_SPI_Rx_DMA_Channel, ENABLE);
+	DMA_Cmd(_DW_SPI_Tx_DMA_Channel, ENABLE);
 	while(_tx_comp_flag == 0);
 	while(_rx_comp_flag == 0);
 	_tx_comp_flag = 0; _rx_comp_flag = 0;
@@ -44,13 +45,13 @@ int DW1000_SPI_Read(uint16_t headerLength, const uint8_t *headerBuffer, uint32_t
 	DMA_InitStructure.DMA_MemoryInc      = DMA_MemoryInc_Disable;
 	DMA_InitStructure.DMA_DIR            = DMA_DIR_PeripheralDST;
 	DMA_Init(_DW_SPI_Tx_DMA_Channel, &DMA_InitStructure);
-	DMA_InitStructure.DMA_MemoryBaseAddr = (uint32_t)readBuffer;
 	DMA_InitStructure.DMA_BufferSize     = readlength;
+	DMA_InitStructure.DMA_MemoryBaseAddr = (uint32_t)readBuffer;
 	DMA_InitStructure.DMA_MemoryInc      = DMA_MemoryInc_Enable;
 	DMA_InitStructure.DMA_DIR            = DMA_DIR_PeripheralSRC;
 	DMA_Init(_DW_SPI_Rx_DMA_Channel, &DMA_InitStructure);
-	DMA_Cmd(_DW_SPI_Tx_DMA_Channel, ENABLE);
 	DMA_Cmd(_DW_SPI_Rx_DMA_Channel, ENABLE);
+	DMA_Cmd(_DW_SPI_Tx_DMA_Channel, ENABLE);
 	while(_tx_comp_flag == 0);
 	while(_rx_comp_flag == 0);
 	_DW_SPI_CS_DISABLE();
@@ -60,21 +61,39 @@ int DW1000_SPI_Read(uint16_t headerLength, const uint8_t *headerBuffer, uint32_t
 
 int DW1000_SPI_Write(uint16_t headerLength, const uint8_t *headerBuffer, uint32_t bodylength, const uint8_t *bodyBuffer)
 {
+	uint8_t dummy = 0;
 	decaIrqStatus_t stat = decamutexon();
-	_tx_comp_flag = 0;
+	_tx_comp_flag = 0; _rx_comp_flag = 0;
 	_DW_SPI_CS_ENABLE();
 	DMA_InitStructure.DMA_BufferSize     = headerLength;
 	DMA_InitStructure.DMA_MemoryBaseAddr = (uint32_t)headerBuffer;
+	DMA_InitStructure.DMA_MemoryInc      = DMA_MemoryInc_Enable;
 	DMA_InitStructure.DMA_DIR            = DMA_DIR_PeripheralDST;
 	DMA_Init(_DW_SPI_Tx_DMA_Channel, &DMA_InitStructure);
+	DMA_InitStructure.DMA_BufferSize     = headerLength;
+	DMA_InitStructure.DMA_MemoryBaseAddr = (uint32_t)(&dummy);
+	DMA_InitStructure.DMA_MemoryInc      = DMA_MemoryInc_Disable;
+	DMA_InitStructure.DMA_DIR            = DMA_DIR_PeripheralSRC;
+	DMA_Init(_DW_SPI_Rx_DMA_Channel, &DMA_InitStructure);
+	DMA_Cmd(_DW_SPI_Rx_DMA_Channel, ENABLE);
 	DMA_Cmd(_DW_SPI_Tx_DMA_Channel, ENABLE);
 	while(_tx_comp_flag == 0);
-	_tx_comp_flag = 0;
+	while(_rx_comp_flag == 0);
+	_tx_comp_flag = 0; _rx_comp_flag = 0;
 	DMA_InitStructure.DMA_BufferSize     = bodylength;
 	DMA_InitStructure.DMA_MemoryBaseAddr = (uint32_t)bodyBuffer;
+	DMA_InitStructure.DMA_MemoryInc      = DMA_MemoryInc_Enable;
+	DMA_InitStructure.DMA_DIR            = DMA_DIR_PeripheralDST;
 	DMA_Init(_DW_SPI_Tx_DMA_Channel, &DMA_InitStructure);
+	DMA_InitStructure.DMA_BufferSize     = bodylength;
+	DMA_InitStructure.DMA_MemoryBaseAddr = (uint32_t)(&dummy);
+	DMA_InitStructure.DMA_MemoryInc      = DMA_MemoryInc_Disable;
+	DMA_InitStructure.DMA_DIR            = DMA_DIR_PeripheralSRC;
+	DMA_Init(_DW_SPI_Rx_DMA_Channel, &DMA_InitStructure);
+	DMA_Cmd(_DW_SPI_Rx_DMA_Channel, ENABLE);
 	DMA_Cmd(_DW_SPI_Tx_DMA_Channel, ENABLE);
 	while(_tx_comp_flag == 0);
+	while(_rx_comp_flag == 0);
 	_DW_SPI_CS_DISABLE();
 	decamutexoff(stat);
 	return 0;
