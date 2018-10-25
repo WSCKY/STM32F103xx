@@ -29,8 +29,9 @@ int DW1000_SPI_Read(uint16_t headerLength, const uint8_t *headerBuffer, uint32_t
 	DMA_InitStructure.DMA_MemoryBaseAddr = (uint32_t)headerBuffer;
 	DMA_InitStructure.DMA_DIR            = DMA_DIR_PeripheralDST;
 	DMA_Init(_DW_SPI_Tx_DMA_Channel, &DMA_InitStructure);
-	DMA_InitStructure.DMA_MemoryBaseAddr = (uint32_t)readBuffer;
 	DMA_InitStructure.DMA_BufferSize     = headerLength;
+	DMA_InitStructure.DMA_MemoryBaseAddr = (uint32_t)readBuffer;
+	DMA_InitStructure.DMA_MemoryInc      = DMA_MemoryInc_Disable;
 	DMA_InitStructure.DMA_DIR            = DMA_DIR_PeripheralSRC;
 	DMA_Init(_DW_SPI_Rx_DMA_Channel, &DMA_InitStructure);
 	DMA_Cmd(_DW_SPI_Tx_DMA_Channel, ENABLE);
