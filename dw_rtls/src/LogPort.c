@@ -79,6 +79,7 @@ PUTCHAR_PROTOTYPE
 void LOG_USART_IRQHandler(void)
 {
 	if(SET == USART_GetITStatus(LOG_USART, USART_IT_RXNE)) {
+		(void)LOG_USART->DR;
 //		UartxReceivedDataCallBack(LOG_USART->DR);
 		USART_ClearFlag(LOG_USART, USART_FLAG_RXNE);
 	}
