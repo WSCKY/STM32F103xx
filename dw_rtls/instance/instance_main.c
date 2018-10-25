@@ -290,25 +290,20 @@ void process_dwRSTn_irq(void)
     instance_notify_DW1000_inIDLE(1);
 }
 
-void instance_process_irq(int x)
-{
-      dwt_isr();
-}
-
 void process_deca_irq(void)
 {
-#ifndef RIOT_TREK_DW1000_APP
-//    while(port_CheckEXT_IRQ() == 1); //while IRS line active (ARM can only do edge sensitive interrupts)
-    {
-        instance_process_irq(0);
-    }
-#else // TBD : Nucleo fix with while(port_CheckEXT_IRQ() == 1);
+//#ifndef RIOT_TREK_DW1000_APP
+//    while(port_CheckEXT_IRQ() == 1) ; //while IRS line active (ARM can only do edge sensitive interrupts)
+//    {
+//        instance_process_irq(0);
+//    }
+//#else // TBD : Nucleo fix with while(port_CheckEXT_IRQ() == 1);
     do{
 
         instance_process_irq(0);
     }
     while(port_CheckEXT_IRQ() == 1); //while IRS line active (ARM can only do edge sensitive interrupts)
-#endif
+//#endif
 }
 
 void configure_continuous_txspectrum_mode(uint8 s1switch)

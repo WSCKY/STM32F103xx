@@ -95,8 +95,8 @@ extern "C" {
 //NOTE: the user payload assumes that there are only 88 "free" bytes to be used for the user message (it does not scale according to the addressing modes)
 #define MAX_USER_PAYLOAD_STRING MAX_USER_PAYLOAD_STRING_LL
 
-#define MAX_TAG_LIST_SIZE               (8)
-#define MAX_ANCHOR_LIST_SIZE            (4) //this is limited to 4 in this application
+#define MAX_TAG_LIST_SIZE               (1)
+#define MAX_ANCHOR_LIST_SIZE            (1) //this is limited to 4 in this application
 #define NUM_EXPECTED_RESPONSES          (3) //e.g. MAX_ANCHOR_LIST_SIZE - 1
 #define NUM_EXPECTED_RESPONSES_ANC      (1) //anchors A0, A1 and A2 are involved in anchor to anchor ranging
 #define NUM_EXPECTED_RESPONSES_ANC0     (2) //anchor A0 expects response from A1 and A2
@@ -134,20 +134,8 @@ extern "C" {
 //this it the delay used for configuring the receiver on delay (wait for response delay)
 //NOTE: this RX_RESPONSE_TURNAROUND is dependent on the microprocessor and code optimisations
 #define RX_RESPONSEX_TURNAROUND (50) //takes about 100 us for response to come back
-
-#ifdef RIOT_TREK_DW1000_APP
-#ifdef NORDIC_NRF52840_BOARD
-#define RX_RESPONSE1_TURNAROUND (300) //takes about 200 us for the 1st response to come back (from A0)
-#define RX_RESPONSE1_TURNAROUND_6M81 (461) //(550) //takes about 100 us for response to come back
-#else
 #define RX_RESPONSE1_TURNAROUND (200) //takes about 200 us for the 1st response to come back (from A0)
 #define RX_RESPONSE1_TURNAROUND_6M81 (300) //takes about 100 us for response to come back
-#endif /* NORDIC_NRF52840_BOARD */
-#else
-#define RX_RESPONSE1_TURNAROUND (200) //takes about 200 us for the 1st response to come back (from A0)
-#define RX_RESPONSE1_TURNAROUND_6M81 (300) //takes about 100 us for response to come back
-#endif /* RIOT_TREK_DW1000_APP */
-
 #define RX_RESPONSE1_TURNAROUND_110K (300) //takes about 100 us for response to come back
 
 //Tag will range to 3 or 4 anchors
@@ -471,9 +459,7 @@ int instance_run(void) ;       // returns indication of status report change
 int testapprun(instance_data_t *inst, int message);
 
 // calls the DW1000 interrupt handler
-//#ifndef RIOT_TREK_DW1000_APP
-//#define instance_process_irq(x)     dwt_isr()  //call device interrupt handler
-//#endif
+#define instance_process_irq(x)     dwt_isr()  //call device interrupt handler
 // configure TX/RX callback functions that are called from DW1000 ISR
 void instance_rxcallback(const dwt_callback_data_t *rxd);
 void instance_txcallback(const dwt_callback_data_t *txd);
@@ -548,13 +534,6 @@ uint16 instancetxantdly(void);
 uint16 instancerxantdly(void);
 
 int instance_starttxtest(int framePeriod);
-
-#ifdef RIOT_TREK_DW1000_APP
-/**
- * @brief DW1000 interrupt handler
- */
-void instance_process_irq(int x);
-#endif
 
 #ifdef __cplusplus
 }

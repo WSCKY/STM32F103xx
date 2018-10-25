@@ -23,7 +23,6 @@
 #include "dw1000_device_api.h"
 #include "dw1000_port.h"
 
-#ifndef RIOT_TREK_DW1000_APP
 // ---------------------------------------------------------------------------
 //
 // NB: The purpose of this file is to provide for microprocessor interrupt enable/disable, this is used for
@@ -91,4 +90,3 @@ void decamutexoff(decaIrqStatus_t s)        // put a function here that re-enabl
         port_EnableEXT_IRQ();
     }
 }
-#endif

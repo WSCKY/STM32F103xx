@@ -2089,11 +2089,7 @@ int dwt_spicswakeup(uint8 *buff, uint16 length)
 
         //need 5ms for XTAL to start and stabilise (could wait for PLL lock IRQ status bit !!!)
         //NOTE: Polling of the STATUS register is not possible unless freq is < 3MHz
-#ifdef RIOT_TREK_DW1000_APP
-        xtimer_usleep(5000);
-#else
         osDelay(5);
-#endif
      }
     else
     {
@@ -2981,9 +2977,7 @@ int dwt_checkoverrun(void)
 //#pragma GCC optimize ("O3")
 void dwt_forcetrxoff(void)
 {
-#ifndef RIOT_TREK_DW1000_APP
     decaIrqStatus_t stat ;
-#endif
     uint8 temp ;
     uint32 mask;
 
@@ -2991,13 +2985,11 @@ void dwt_forcetrxoff(void)
 
     mask = dwt_read32bitreg(SYS_MASK_ID) ;  //read set interrupt mask
 
-#ifndef RIOT_TREK_DW1000_APP
     // need to beware of interrupts occurring in the middle of following read modify write cycle
     // we can disable the radio, but before the status is cleared an interrupt can be set (e.g. the
     // event has just happened before the radio was disabled)
     // thus we need to disable interrupt during this operation
     stat = decamutexon() ;
-#endif
 
     dwt_write32bitreg(SYS_MASK_ID, 0) ; //clear interrupt mask - so we don't get any unwanted events
 
@@ -3010,10 +3002,8 @@ void dwt_forcetrxoff(void)
 
     dwt_write32bitreg(SYS_MASK_ID, mask) ; //set interrupt mask to what it was
 
-#ifndef RIOT_TREK_DW1000_APP
     //enable/restore interrupts again...
     decamutexoff(stat) ;
-#endif
 
     dw1000local.wait4resp = 0;
 
@@ -3214,15 +3204,11 @@ void dwt_setpreambledetecttimeout(uint16 timeout)
  */
 void dwt_setinterrupt(uint32 bitmask, uint8 enable)
 {
-#ifndef RIOT_TREK_DW1000_APP
     decaIrqStatus_t stat ;
-#endif
     uint32 mask ;
 
-#ifndef RIOT_TREK_DW1000_APP
     // need to beware of interrupts occurring in the middle of following read modify write cycle
     stat = decamutexon() ;
-#endif
 
     mask = dwt_read32bitreg(SYS_MASK_ID) ;           // read register
 
@@ -3236,9 +3222,7 @@ void dwt_setinterrupt(uint32 bitmask, uint8 enable)
     }
     dwt_write32bitreg(SYS_MASK_ID,mask) ;            // new value
 
-#ifndef RIOT_TREK_DW1000_APP
     decamutexoff(stat) ;
-#endif
 }
 
 
@@ -3752,18 +3736,6 @@ void dwt_dumpregisters(char *str, size_t strSize)
         str += cnt = sprintf_s(str,strSize,"\n") ;
         strSize -= cnt ;
     }
-}
-#endif
-
-#ifdef RIOT_TREK_DW1000_APP
-int dwt_write32bitreg(int x,uint32 y)
-{
-   return  dwt_write32bitoffsetreg(x,0,y);
-}
-
-int dwt_read32bitreg(int x)
-{
-   return  dwt_read32bitoffsetreg(x,0);
 }
 #endif
 

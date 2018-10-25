@@ -1582,10 +1582,8 @@ uint16 dwt_read16bitoffsetreg(int regFileID, int regOffset);
  */
 int dwt_write16bitoffsetreg(int regFileID, int regOffset, uint16 regval) ;
 
-#ifndef RIOT_TREK_DW1000_APP
 #define dwt_write32bitreg(x,y)  dwt_write32bitoffsetreg(x,0,y)
 #define dwt_read32bitreg(x)     dwt_read32bitoffsetreg(x,0)
-#endif
 
 /*! ------------------------------------------------------------------------------------------------------------------
  * Function: writetospi()
@@ -1682,7 +1680,6 @@ double dwt_getrangebias(uint8 chan, float range, uint8 prf);
 
 typedef int decaIrqStatus_t;               // type for remembering IRQ status
 
-#ifndef RIOT_TREK_DW1000_APP
 /*! ------------------------------------------------------------------------------------------------------------------
  * Function: decamutexon()
  *
@@ -1715,7 +1712,6 @@ decaIrqStatus_t decamutexon(void);
  * returns the state of the DW1000 interrupt
  */
 void decamutexoff(decaIrqStatus_t s) ;
-#endif
 
 // -------------------------------------------------------------------------------------------------------------------
 // Debug API functions
@@ -1725,39 +1721,6 @@ void decamutexoff(decaIrqStatus_t s) ;
 // Reads the DW1000 register data to the given string
 
 void dwt_dumpregisters(char *str, size_t strSize);
-#endif
-
-#ifdef RIOT_TREK_DW1000_APP
-/*!-----------------------------------------------------------------------------------------------------------------
- * Function: dwt_write32bitreg()
- *
- * Description:This function writes to 32bit register
- *
- * Note: the body of function is written in deca_device.c
- *
- * input parameters:
- * @param x- register file ID to write
- * @param y- value to write
- *
- * output parameters:
- * returns DWT_DECA_SUCCESS for success, or DWT_DECA_ERROR for error
- */
-int dwt_write32bitreg(int x, uint32 y);
-
-/*!-----------------------------------------------------------------------------------------------------------------
- * Function: dwt_read32bitreg()
- *
- * Description:This function reads 32bit register
- *
- * Note: the body of function is written in deca_device.c
- *
- * input parameters:
- * @param x- register file ID to read
- *
- * output parameters:
- * returns 32 bit register value (success), or DWT_DECA_ERROR for error
- */
-int dwt_read32bitreg(int x);
 #endif
 
 #ifdef __cplusplus
