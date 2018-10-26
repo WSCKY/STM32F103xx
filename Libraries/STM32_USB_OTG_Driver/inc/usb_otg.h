@@ -2,13 +2,13 @@
   ******************************************************************************
   * @file    usb_otg.h
   * @author  MCD Application Team
-  * @version V2.1.0
-  * @date    19-March-2012
+  * @version V2.2.0
+  * @date    09-November-2015
   * @brief   OTG Core Header
   ******************************************************************************
   * @attention
   *
-  * <h2><center>&copy; COPYRIGHT 2012 STMicroelectronics</center></h2>
+  * <h2><center>&copy; COPYRIGHT 2015 STMicroelectronics</center></h2>
   *
   * Licensed under MCD-ST Liberty SW License Agreement V2, (the "License");
   * You may not use this file except in compliance with the License.
@@ -45,12 +45,10 @@
   */ 
 
 
-void USB_OTG_InitiateSRP(USB_OTG_CORE_HANDLE *pdev) ;
-
-void USB_OTG_InitiateHNP(USB_OTG_CORE_HANDLE *pdev , uint8_t state, uint8_t mode) ;
-
-void USB_OTG_Switchback (USB_OTG_CORE_HANDLE *pdev);
-uint32_t  USB_OTG_GetCurrentState (USB_OTG_CORE_HANDLE *pdev);
+void USB_OTG_InitiateSRP(void);
+void USB_OTG_InitiateHNP(uint8_t state , uint8_t mode);
+void USB_OTG_Switchback (USB_OTG_CORE_DEVICE *pdev);
+uint32_t  USB_OTG_GetCurrentState (USB_OTG_CORE_DEVICE *pdev);
 
 /**
   * @}

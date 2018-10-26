@@ -2,13 +2,13 @@
   ******************************************************************************
   * @file    usb_hcd.c
   * @author  MCD Application Team
-  * @version V2.1.0
-  * @date    19-March-2012
+  * @version V2.2.0
+  * @date    09-November-2015
   * @brief   Host Interface Layer
   ******************************************************************************
   * @attention
   *
-  * <h2><center>&copy; COPYRIGHT 2012 STMicroelectronics</center></h2>
+  * <h2><center>&copy; COPYRIGHT 2015 STMicroelectronics</center></h2>
   *
   * Licensed under MCD-ST Liberty SW License Agreement V2, (the "License");
   * You may not use this file except in compliance with the License.
@@ -97,7 +97,6 @@
 uint32_t HCD_Init(USB_OTG_CORE_HANDLE *pdev , 
                   USB_OTG_CORE_ID_TypeDef coreID)
 {
-#ifdef USE_HOST_MODE
   uint8_t i = 0;
   pdev->host.ConnSts = 0;
   
@@ -108,7 +107,7 @@ uint32_t HCD_Init(USB_OTG_CORE_HANDLE *pdev ,
   pdev->host.HC_Status[i]   = HC_IDLE;
   }
   pdev->host.hc[0].max_packet  = 8; 
-#endif
+
   USB_OTG_SelectCore(pdev, coreID);
 #ifndef DUAL_ROLE_MODE_ENABLED
   USB_OTG_DisableGlobalInt(pdev);
@@ -149,8 +148,8 @@ uint32_t HCD_ResetPort(USB_OTG_CORE_HANDLE *pdev)
 {
   /*
   Before starting to drive a USB reset, the application waits for the OTG 
-  interrupt triggered by the debounce done bit (DBCDNE bit in OTG_FS_GOTGINT), 
-  which indicates that the bus is stable again after the electrical debounce 
+  interrupt triggered by the denounce done bit (DBCDNE bit in OTG_FS_GOTGINT), 
+  which indicates that the bus is stable again after the electrical denounce 
   caused by the attachment of a pull-up resistor on DP (FS) or DM (LS).
   */
   
@@ -167,11 +166,20 @@ uint32_t HCD_ResetPort(USB_OTG_CORE_HANDLE *pdev)
   */
 uint32_t HCD_IsDeviceConnected(USB_OTG_CORE_HANDLE *pdev)
 {
-#ifdef USE_HOST_MODE
   return (pdev->host.ConnSts);
-#else
-  return 0;
-#endif
+}
+
+
+/**
+  * @brief  HCD_IsPortEnabled 
+  *         This function checks if port is enabled
+  * @param  pdev : Selected device
+  * @retval Frame number
+  * 
+  */
+uint32_t HCD_IsPortEnabled(USB_OTG_CORE_HANDLE *pdev)
+{
+  return (pdev->host.PortEnabled);
 }
 
 /**
@@ -195,11 +203,7 @@ uint32_t HCD_GetCurrentFrame (USB_OTG_CORE_HANDLE *pdev)
   */
 URB_STATE HCD_GetURB_State (USB_OTG_CORE_HANDLE *pdev , uint8_t ch_num) 
 {
-#ifdef USE_HOST_MODE
   return pdev->host.URB_State[ch_num] ;
-#else
-  return URB_IDLE;
-#endif
 }
 
 /**
@@ -211,11 +215,7 @@ URB_STATE HCD_GetURB_State (USB_OTG_CORE_HANDLE *pdev , uint8_t ch_num)
   */
 uint32_t HCD_GetXferCnt (USB_OTG_CORE_HANDLE *pdev, uint8_t ch_num) 
 {
-#ifdef USE_HOST_MODE
   return pdev->host.XferCnt[ch_num] ;
-#else
-  return 0;
-#endif
 }
 
 
@@ -229,11 +229,7 @@ uint32_t HCD_GetXferCnt (USB_OTG_CORE_HANDLE *pdev, uint8_t ch_num)
   */
 HC_STATUS HCD_GetHCState (USB_OTG_CORE_HANDLE *pdev ,  uint8_t ch_num) 
 {
-#ifdef USE_HOST_MODE
   return pdev->host.HC_Status[ch_num] ;
-#else
-  return HC_IDLE;
-#endif
 }
 
 /**
@@ -245,11 +241,7 @@ HC_STATUS HCD_GetHCState (USB_OTG_CORE_HANDLE *pdev ,  uint8_t ch_num)
   */
 uint32_t HCD_HC_Init (USB_OTG_CORE_HANDLE *pdev , uint8_t hc_num) 
 {
-#ifdef USE_HOST_MODE
-  return USB_OTG_HC_Init(pdev, hc_num);
-#else
-  return 0;
-#endif
+  return USB_OTG_HC_Init(pdev, hc_num);  
 }
 
 /**
@@ -261,10 +253,9 @@ uint32_t HCD_HC_Init (USB_OTG_CORE_HANDLE *pdev , uint8_t hc_num)
   */
 uint32_t HCD_SubmitRequest (USB_OTG_CORE_HANDLE *pdev , uint8_t hc_num) 
 {
-#ifdef USE_HOST_MODE
+  
   pdev->host.URB_State[hc_num] =   URB_IDLE;  
   pdev->host.hc[hc_num].xfer_count = 0 ;
-#endif
   return USB_OTG_HC_StartXfer(pdev, hc_num);
 }
 

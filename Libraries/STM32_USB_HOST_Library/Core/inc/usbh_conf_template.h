@@ -1,14 +1,14 @@
 /**
   ******************************************************************************
-  * @file    usbd_conf_template.h
+  * @file    usbh_conf_template
   * @author  MCD Application Team
-  * @version V1.1.0
-  * @date    19-March-2012
-  * @brief   usb device configuration template file
+  * @version V2.2.0
+  * @date    09-November-2015
+  * @brief   General USB Host library configuration
   ******************************************************************************
   * @attention
   *
-  * <h2><center>&copy; COPYRIGHT 2012 STMicroelectronics</center></h2>
+  * <h2><center>&copy; COPYRIGHT 2015 STMicroelectronics</center></h2>
   *
   * Licensed under MCD-ST Liberty SW License Agreement V2, (the "License");
   * You may not use this file except in compliance with the License.
@@ -26,49 +26,38 @@
   */
 
 /* Define to prevent recursive inclusion -------------------------------------*/
-#ifndef __USBD_CONF__H__
-#define __USBD_CONF__H__
+#ifndef __USBH_CONF__H__
+#define __USBH_CONF__H__
 
 /* Includes ------------------------------------------------------------------*/
-#include "usb_conf.h"
 
-/** @defgroup USB_CONF_Exported_Defines
+/** @addtogroup USBH_OTG_DRIVER
+  * @{
+  */
+  
+/** @defgroup USBH_CONF
+  * @brief usb otg low level driver configuration file
   * @{
   */ 
-#define USE_USB_OTG_FS
 
-#define USBD_CFG_MAX_NUM           1
-#define USB_MAX_STR_DESC_SIZ       64 
-#define USBD_EP0_MAX_PACKET_SIZE   64
+/** @defgroup USBH_CONF_Exported_Defines
+  * @{
+  */ 
+
+#define USBH_MAX_NUM_ENDPOINTS                2
+#define USBH_MAX_NUM_INTERFACES               2
+#ifdef USE_USB_OTG_FS 
+#define USBH_MSC_MPS_SIZE                 0x40
+#else
+#define USBH_MSC_MPS_SIZE                 0x200
+#endif
 
 /**
   * @}
   */ 
 
 
-/** @defgroup USB_CONF_Exported_Types
-  * @{
-  */ 
-/**
-  * @}
-  */ 
-
-
-/** @defgroup USB_CONF_Exported_Macros
-  * @{
-  */ 
-/**
-  * @}
-  */ 
-
-/** @defgroup USB_CONF_Exported_Variables
-  * @{
-  */ 
-/**
-  * @}
-  */ 
-
-/** @defgroup USB_CONF_Exported_FunctionsPrototype
+/** @defgroup USBH_CONF_Exported_Types
   * @{
   */ 
 /**
@@ -76,7 +65,37 @@
   */ 
 
 
-#endif //__USBD_CONF__H__
+/** @defgroup USBH_CONF_Exported_Macros
+  * @{
+  */ 
+/**
+  * @}
+  */ 
 
+/** @defgroup USBH_CONF_Exported_Variables
+  * @{
+  */ 
+/**
+  * @}
+  */ 
+
+/** @defgroup USBH_CONF_Exported_FunctionsPrototype
+  * @{
+  */ 
+/**
+  * @}
+  */ 
+
+
+#endif //__USBH_CONF__H__
+
+
+/**
+  * @}
+  */ 
+
+/**
+  * @}
+  */ 
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/
 

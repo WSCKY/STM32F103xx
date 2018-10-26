@@ -2,13 +2,13 @@
   ******************************************************************************
   * @file    usb_dcd_int.c
   * @author  MCD Application Team
-  * @version V2.1.0
-  * @date    19-March-2012
+  * @version V2.2.0
+  * @date    09-November-2015
   * @brief   Peripheral Device interrupt subroutines
   ******************************************************************************
   * @attention
   *
-  * <h2><center>&copy; COPYRIGHT 2012 STMicroelectronics</center></h2>
+  * <h2><center>&copy; COPYRIGHT 2015 STMicroelectronics</center></h2>
   *
   * Licensed under MCD-ST Liberty SW License Agreement V2, (the "License");
   * You may not use this file except in compliance with the License.
@@ -130,8 +130,7 @@ uint32_t USBD_OTG_EP1OUT_ISR_Handler (USB_OTG_CORE_HANDLE *pdev)
     if (pdev->cfg.dma_enable == 1)
     {
       deptsiz.d32 = USB_OTG_READ_REG32(&(pdev->regs.OUTEP_REGS[1]->DOEPTSIZ));
-      /*ToDo : handle more than one single MPS size packet */
-      pdev->dev.out_ep[1].xfer_count = pdev->dev.out_ep[1].maxpacket - \
+      pdev->dev.out_ep[1].xfer_count = pdev->dev.out_ep[1].xfer_len- \
         deptsiz.b.xfersize;
     }    
     /* Inform upper layer: data ready */
@@ -194,7 +193,6 @@ uint32_t USBD_OTG_EP1IN_ISR_Handler (USB_OTG_CORE_HANDLE *pdev)
   if (diepint.b.emptyintr)
   {
     DCD_WriteEmptyTxFifo(pdev , 1);
-    CLEAR_IN_EP_INTR(1, emptyintr);
   }
   return 1;
 }
@@ -214,8 +212,6 @@ uint32_t USBD_OTG_ISR_Handler (USB_OTG_CORE_HANDLE *pdev)
   if (USB_OTG_IsDeviceMode(pdev)) /* ensure that we are in device mode */
   {
     gintr_status.d32 = USB_OTG_ReadCoreItr(pdev);
-
-    //ZS: on startup if not plugged in - return zero
     if (!gintr_status.d32) /* avoid spurious interrupt */
     {
       return 0;
@@ -246,12 +242,10 @@ uint32_t USBD_OTG_ISR_Handler (USB_OTG_CORE_HANDLE *pdev)
       retval |= DCD_HandleResume_ISR(pdev);
     }
     
-    //ZS: this event is triggered when cable is pulled out/ and plugged in
     if (gintr_status.b.usbsuspend)
     {
       retval |= DCD_HandleUSBSuspend_ISR(pdev);
     }
-
     if (gintr_status.b.sofintr)
     {
       retval |= DCD_HandleSof_ISR(pdev);
@@ -264,7 +258,6 @@ uint32_t USBD_OTG_ISR_Handler (USB_OTG_CORE_HANDLE *pdev)
       
     }
     
-    //ZS: this event is triggered when cable is plugged in
     if (gintr_status.b.usbreset)
     {
       retval |= DCD_HandleUsbReset_ISR(pdev);
@@ -357,7 +350,7 @@ static uint32_t DCD_HandleResume_ISR(USB_OTG_CORE_HANDLE *pdev)
   if(pdev->cfg.low_power)
   {
     /* un-gate USB Core clock */
-    power.d32 = USB_OTG_READ_REG32(&pdev->regs.PCGCCTL);
+    power.d32 = USB_OTG_READ_REG32(pdev->regs.PCGCCTL);
     power.b.gatehclk = 0;
     power.b.stoppclk = 0;
     USB_OTG_WRITE_REG32(pdev->regs.PCGCCTL, power.d32);
@@ -437,7 +430,7 @@ static uint32_t DCD_HandleInEP_ISR(USB_OTG_CORE_HANDLE *pdev)
   
   while ( ep_intr )
   {
-    if (ep_intr&0x1) /* In ITR */
+    if ((ep_intr & 0x1) == 0x01) /* In ITR */
     {
       diepint.d32 = DCD_ReadDevInEP(pdev , epnum); /* Get In ITR status */
       if ( diepint.b.xfercompl )
@@ -475,10 +468,7 @@ static uint32_t DCD_HandleInEP_ISR(USB_OTG_CORE_HANDLE *pdev)
       }       
       if (diepint.b.emptyintr)
       {
-        
         DCD_WriteEmptyTxFifo(pdev , epnum);
-        
-        CLEAR_IN_EP_INTR(epnum, emptyintr);
       }
     }
     epnum++;
@@ -647,6 +637,7 @@ static uint32_t DCD_WriteEmptyTxFifo(USB_OTG_CORE_HANDLE *pdev, uint32_t epnum)
   uint32_t len = 0;
   uint32_t len32b;
   txstatus.d32 = 0;
+  uint32_t fifoemptymsk;
   
   ep = &pdev->dev.in_ep[epnum];    
   
@@ -659,8 +650,6 @@ static uint32_t DCD_WriteEmptyTxFifo(USB_OTG_CORE_HANDLE *pdev, uint32_t epnum)
   
   len32b = (len + 3) / 4;
   txstatus.d32 = USB_OTG_READ_REG32( &pdev->regs.INEP_REGS[epnum]->DTXFSTS);
-  
-  
   
   while  (txstatus.b.txfspcavail > len32b &&
           ep->xfer_count < ep->xfer_len &&
@@ -679,40 +668,16 @@ static uint32_t DCD_WriteEmptyTxFifo(USB_OTG_CORE_HANDLE *pdev, uint32_t epnum)
     
     ep->xfer_buff  += len;
     ep->xfer_count += len;
-#if 0
-    This is definitely due to an error in the STM32 USB lib in device mode:
-
-    As soon as you load the first time an IN endpoint (non-zero - done in the function DCD_EP_Tx), then the function USB_OTG_EPStartXfer will set the corresponding bit for this endpoint number in the register DREGS->DIEPEMPMSK to 1.
-
-    After this, every time, when the transmit FIFO is empty for this endpoint, there will come an interrupt.
-
-    The error in STM32 USB lib is, that this interrupt mask bit is never reset again (if you look for DIEPEMPMSK in the project files, you will see that it comes only once, at this "set" point - it is never cleared).
-
-    After this time, you are therefore "flooded" with such "empty FIFO" interrupts - even after the transfer is completed (flag TXFE in DIEPINTx register - this flag can neither be reset or masked out directly - only possibility to get rid of this interrupt, is to kill the corresponding bit in the DIEPEMPMSK register, as I see it).
-
-    To avoid this, please add the following code in the function DCD_WriteEmptyTxFifo (this function handles the "Empty TX FIFO" interrupt):
-
-    In the while loop, at the end of this function, you find the 2 lines:
-        ep->xfer_buff  += len;
-        ep->xfer_count += len;
-
-    After this, please insert the following code (to reset the DIEPEMPMSK-Bit, if all bytes have been transferred to the TX FIFO):
-        if( ep->xfer_count >= ep->xfer_len){
-          uint32_t fifoemptymsk = 1 << ep->num;
-          USB_OTG_MODIFY_REG32(&pdev->regs.DREGS->DIEPEMPMSK, fifoemptymsk, 0);
-          break;
-        }
-
-    (the "break;" is not important - the while loop anyway will quit on next while condition - it just saves you checking this next while condition).
-#endif
-    		//ZS - added see above
-            if( ep->xfer_count >= ep->xfer_len){
-              uint32_t fifoemptymsk = 1 << ep->num;
-              USB_OTG_MODIFY_REG32(&pdev->regs.DREGS->DIEPEMPMSK, fifoemptymsk, 0);
-              break;
-            }
     
     txstatus.d32 = USB_OTG_READ_REG32(&pdev->regs.INEP_REGS[epnum]->DTXFSTS);
+    
+    /* Mask the TxFIFOEmpty interrupt  */
+    if (ep->xfer_len == ep->xfer_count)
+    {
+      fifoemptymsk = 0x1 << ep->num;  
+      USB_OTG_MODIFY_REG32(&pdev->regs.DREGS->DIEPEMPMSK, 
+                           fifoemptymsk, 0); 
+    }
   }
   
   return 1;
@@ -801,28 +766,102 @@ static uint32_t DCD_HandleUsbReset_ISR(USB_OTG_CORE_HANDLE *pdev)
 */
 static uint32_t DCD_HandleEnumDone_ISR(USB_OTG_CORE_HANDLE *pdev)
 {
+  uint32_t hclk = 168000000;
+  
   USB_OTG_GINTSTS_TypeDef  gintsts;
   USB_OTG_GUSBCFG_TypeDef  gusbcfg;
-  
+  RCC_ClocksTypeDef RCC_Clocks;
   USB_OTG_EP0Activate(pdev);
   
-  /* Set USB turn-around time based on device speed and PHY interface. */
+  /* Get HCLK frequency */
+  RCC_GetClocksFreq(&RCC_Clocks);
+  hclk = RCC_Clocks.HCLK_Frequency;
+
+  /* Clear default TRDT value and Set USB turn-around time based on device speed and PHY interface. */
   gusbcfg.d32 = USB_OTG_READ_REG32(&pdev->regs.GREGS->GUSBCFG);
+  gusbcfg.b.usbtrdtim = 0;
+  USB_OTG_WRITE_REG32(&pdev->regs.GREGS->GUSBCFG, gusbcfg.d32);
   
   /* Full or High speed */
   if ( USB_OTG_GetDeviceSpeed(pdev) == USB_SPEED_HIGH)
   {
     pdev->cfg.speed            = USB_OTG_SPEED_HIGH;
     pdev->cfg.mps              = USB_OTG_HS_MAX_PACKET_SIZE ;    
+    
+    /*USBTRD min For HS device*/
     gusbcfg.b.usbtrdtim = 9;
   }
   else
   {
     pdev->cfg.speed            = USB_OTG_SPEED_FULL;
-    pdev->cfg.mps              = USB_OTG_FS_MAX_PACKET_SIZE ;  
-    gusbcfg.b.usbtrdtim = 5;
+    pdev->cfg.mps              = USB_OTG_FS_MAX_PACKET_SIZE ; 
+    
+    /* The USBTRD is configured according to the tables below, depending on AHB frequency 
+    used by application. In the low AHB frequency range it is used to stretch enough the USB response 
+    time to IN tokens, the USB turnaround time, so to compensate for the longer AHB read access 
+    latency to the Data FIFO */
+    
+    if((hclk >= 15000000)&&(hclk < 16000000))
+    {
+      /* hclk Clock Range between 15-16 MHz */
+      gusbcfg.b.usbtrdtim = 0xE;
+    }
+    
+    else if((hclk >= 16000000)&&(hclk < 17100000))
+    {
+      /* hclk Clock Range between 16-17.1 MHz */
+      gusbcfg.b.usbtrdtim = 0xD;
+    }
+    
+    else if((hclk >= 17100000)&&(hclk < 18400000))
+    {
+      /* hclk Clock Range between 17-18.4 MHz */
+      gusbcfg.b.usbtrdtim = 0xC;
+    }
+    
+    else if((hclk >= 18400000)&&(hclk < 20000000))
+    {
+      /* hclk Clock Range between 18.4-20 MHz */
+      gusbcfg.b.usbtrdtim = 0xB;
+    }
+    
+    else if((hclk >= 20000000)&&(hclk < 21800000))
+    {
+      /* hclk Clock Range between 20-21.8 MHz */
+      gusbcfg.b.usbtrdtim = 0xA;
+    }
+    
+    else if((hclk >= 21800000)&&(hclk < 24000000))
+    {
+      /* hclk Clock Range between 21.8-24 MHz */
+      gusbcfg.b.usbtrdtim = 0x9;
+    }
+    
+    else if((hclk >= 24000000)&&(hclk < 26600000))
+    {
+      /* hclk Clock Range between 24-26.6 MHz */
+      gusbcfg.b.usbtrdtim = 0x8;
+    }
+    
+    else if((hclk >= 26600000)&&(hclk < 30000000))
+    {
+      /* hclk Clock Range between 26.6-30 MHz */
+      gusbcfg.b.usbtrdtim = 0x7;
+    }
+    
+    else if((hclk >= 30000000)&&(hclk < 34300000))
+    {
+      /* hclk Clock Range between 30-34.3 MHz */
+      gusbcfg.b.usbtrdtim= 0x6;
+    } 
+    
+    else /* if(hclk >= 34300000) */
+    {
+      /* hclk Clock Range between 34.3-168 MHz */
+      gusbcfg.b.usbtrdtim = 0x5;
+    }
   }
-  
+
   USB_OTG_WRITE_REG32(&pdev->regs.GREGS->GUSBCFG, gusbcfg.d32);
   
   /* Clear interrupt */
@@ -888,8 +927,6 @@ static uint32_t DCD_ReadDevInEP (USB_OTG_CORE_HANDLE *pdev, uint8_t epnum)
   v = USB_OTG_READ_REG32(&pdev->regs.INEP_REGS[epnum]->DIEPINT) & msk;
   return v;
 }
-
-
 
 /**
 * @}

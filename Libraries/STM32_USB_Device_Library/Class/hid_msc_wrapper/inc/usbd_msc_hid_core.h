@@ -1,14 +1,14 @@
 /**
   ******************************************************************************
-  * @file    usbd_conf_template.h
+  * @file    usbd_msc_hid_core.h
   * @author  MCD Application Team
-  * @version V1.1.0
-  * @date    19-March-2012
-  * @brief   usb device configuration template file
+  * @version V1.2.0
+  * @date    09-November-2015
+  * @brief   header file for the usbd_msc_hid_core.c file.
   ******************************************************************************
   * @attention
   *
-  * <h2><center>&copy; COPYRIGHT 2012 STMicroelectronics</center></h2>
+  * <h2><center>&copy; COPYRIGHT 2015 STMicroelectronics</center></h2>
   *
   * Licensed under MCD-ST Liberty SW License Agreement V2, (the "License");
   * You may not use this file except in compliance with the License.
@@ -23,60 +23,78 @@
   * limitations under the License.
   *
   ******************************************************************************
-  */
-
-/* Define to prevent recursive inclusion -------------------------------------*/
-#ifndef __USBD_CONF__H__
-#define __USBD_CONF__H__
+  */ 
 
 /* Includes ------------------------------------------------------------------*/
-#include "usb_conf.h"
 
-/** @defgroup USB_CONF_Exported_Defines
+#ifndef __USB_MSC_HID_CORE_H_
+#define __USB_MSC_HID_CORE_H_
+
+#include  "usbd_ioreq.h"
+
+/** @addtogroup STM32_USB_OTG_DEVICE_LIBRARY
+  * @{
+  */
+  
+/** @defgroup USBD_HID
+  * @brief This file is the Header file for USBD_msc.c
   * @{
   */ 
-#define USE_USB_OTG_HS  
+#define HID_INTERFACE 0x0
+#define MSC_INTERFACE 0x1
 
-#define USBD_CFG_MAX_NUM           1
-#define USB_MAX_STR_DESC_SIZ       64 
-#define USBD_EP0_MAX_PACKET_SIZE   64
+/** @defgroup USBD_HID_Exported_Defines
+  * @{
+  */ 
+#define USB_MSC_HID_CONFIG_DESC_SIZ  (USB_HID_CONFIG_DESC_SIZ -9 + USB_MSC_CONFIG_DESC_SIZ)
+/**
+  * @}
+  */ 
+
+
+/** @defgroup USBD_CORE_Exported_TypesDefinitions
+  * @{
+  */
+
 
 /**
   * @}
   */ 
 
 
-/** @defgroup USB_CONF_Exported_Types
+
+/** @defgroup USBD_CORE_Exported_Macros
   * @{
   */ 
+
 /**
   * @}
   */ 
 
-
-/** @defgroup USB_CONF_Exported_Macros
+/** @defgroup USBD_CORE_Exported_Variables
   * @{
   */ 
+
+extern USBD_Class_cb_TypeDef  USBD_MSC_HID_cb;
 /**
   * @}
   */ 
 
-/** @defgroup USB_CONF_Exported_Variables
+/** @defgroup USB_CORE_Exported_Functions
   * @{
   */ 
+
 /**
   * @}
   */ 
 
-/** @defgroup USB_CONF_Exported_FunctionsPrototype
-  * @{
-  */ 
+#endif  /* __USB_HID_CORE_H_ */
 /**
   * @}
   */ 
 
-
-#endif //__USBD_CONF__H__
-
+/**
+  * @}
+  */ 
+  
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/
-

@@ -2,13 +2,13 @@
   ******************************************************************************
   * @file    usb_conf.h
   * @author  MCD Application Team
-  * @version V2.1.0
-  * @date    19-March-2012
+  * @version V2.2.0
+  * @date    09-November-2015
   * @brief   General low level driver configuration
   ******************************************************************************
   * @attention
   *
-  * <h2><center>&copy; COPYRIGHT 2012 STMicroelectronics</center></h2>
+  * <h2><center>&copy; COPYRIGHT 2015 STMicroelectronics</center></h2>
   *
   * Licensed under MCD-ST Liberty SW License Agreement V2, (the "License");
   * You may not use this file except in compliance with the License.
@@ -29,10 +29,8 @@
 #ifndef __USB_CONF__H__
 #define __USB_CONF__H__
 
-
 /* Includes ------------------------------------------------------------------*/
-#include "stm32f10x.h"
-
+#include "usb_conf.h"
 
 /** @addtogroup USB_OTG_DRIVER
   * @{
@@ -59,7 +57,7 @@
 *  when FS core is used.
 *******************************************************************************/
 #ifndef USE_USB_OTG_FS
- #define USE_USB_OTG_FS
+ //#define USE_USB_OTG_FS
 #endif /* USE_USB_OTG_FS */
 
 #ifdef USE_USB_OTG_FS 
@@ -248,7 +246,6 @@
   #define __ALIGN_END   
 #endif /* USB_OTG_HS_INTERNAL_DMA_ENABLED */
 
-#ifndef __packed
 /* __packed keyword used to decrease the data type alignment to 1-byte */
 #if defined (__CC_ARM)         /* ARM Compiler */
   #define __packed    __packed
@@ -259,7 +256,7 @@
 #elif defined   (__TASKING__)  /* TASKING Compiler */
   #define __packed    __unaligned
 #endif /* __CC_ARM */
-#endif
+
 /**
   * @}
   */ 
