@@ -88,8 +88,6 @@
 
 void USB_OTG_BSP_Init(USB_OTG_CORE_HANDLE *pdev)
 {
-	RCC->CFGR &= 0xFFBFFFFF;
-//  RCC_OTGFSCLKConfig(RCC_OTGFSCLKSource_PLLVCO_Div3);
   RCC_AHBPeriphClockCmd(RCC_AHBPeriph_OTG_FS, ENABLE);
 	RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOA, ENABLE);
 
@@ -104,27 +102,6 @@ void USB_OTG_BSP_Init(USB_OTG_CORE_HANDLE *pdev)
 	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_Out_PP;
 	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
 	GPIO_Init(GPIOA, &GPIO_InitStructure);
-//		GPIO_InitTypeDef GPIO_InitStructure;
-//	//USB GPIOA config
-//	//Vbus set as Input Floating for OTG
-//	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_9;
-//	GPIO_InitStructure.GPIO_Mode = 	GPIO_Mode_IN_FLOATING;
-//	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
-//	GPIO_Init(GPIOA, &GPIO_InitStructure);
-//	//ID set as input pull up for OTG
-//	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_10 ;
-//	GPIO_InitStructure.GPIO_Mode = 	GPIO_Mode_IPU;
-//	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
-//	GPIO_Init(GPIOA, &GPIO_InitStructure);
-//	// the DP and DM are controlled automatically
-//	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_11 | GPIO_Pin_12;
-//	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_Out_PP;
-//	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
-//	GPIO_Init(GPIOA, &GPIO_InitStructure);
-
-
-//	// Enable USB clock (48Mbps)
-//	RCC_AHBPeriphClockCmd( RCC_AHBPeriph_OTG_FS, ENABLE) ;
 }
 /**
 * @brief  USB_OTG_BSP_EnableInterrupt

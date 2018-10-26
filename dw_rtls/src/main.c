@@ -56,10 +56,10 @@ static void SystemStartThread(void const *p)
 	LOGPortInit();
 //	DW1000_If_Init();
 
-USBD_Init(&USB_OTG_dev,
+	USBD_Init(&USB_OTG_dev,
             USB_OTG_FS_CORE_ID,
-            &USR_desc, 
-            &USBD_CDC_cb, 
+            &USR_desc,
+            &USBD_CDC_cb,
             &USR_cb);
 
 	osTimerDef(0, LEDStateTimerCallback);
