@@ -21,6 +21,7 @@
 #include "usbd_usr.h"
 #include "usb_conf.h"
 #include "usbd_desc.h"
+#include "usbd_cdc_vcp.h"
 
 #include "cmsis_os.h"
 

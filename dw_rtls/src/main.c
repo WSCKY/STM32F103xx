@@ -107,10 +107,10 @@ static void MainControlSubThread(void const *p)
 //	instance_main();
 	break_flag = 1;
 	uint32_t PreviousWakeTime = osKernelSysTick();
-	uint32_t DelayTime = configTICK_RATE_HZ / MAIN_CONTROLLER_LOOP_RATE;
+	uint32_t DelayTime = 500;//configTICK_RATE_HZ / MAIN_CONTROLLER_LOOP_RATE;
 	for(;;) {
 		osDelayUntil(&PreviousWakeTime, DelayTime);
-//		usb_test();
+		USB_CDC_SendBuffer((uint8_t *)"Hello.\n", 8);
 	}
 }
 
