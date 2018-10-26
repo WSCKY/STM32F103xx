@@ -34,6 +34,8 @@
 /* Private macro -------------------------------------------------------------*/
 /* Private variables ---------------------------------------------------------*/
 /* Private function prototypes -----------------------------------------------*/
+extern USB_OTG_CORE_HANDLE           USB_OTG_dev;
+extern uint32_t USBD_OTG_ISR_Handler (USB_OTG_CORE_HANDLE *pdev);
 /* Private functions ---------------------------------------------------------*/
 
 /******************************************************************************/
@@ -49,6 +51,11 @@ void NMI_Handler(void)
 {
 }
 
+__ASM void func(void)
+{
+	BX LR
+}
+
 /**
   * @brief  This function handles Hard Fault exception.
   * @param  None
@@ -56,6 +63,7 @@ void NMI_Handler(void)
   */
 void HardFault_Handler(void)
 {
+//	func();
   /* Go to infinite loop when Hard Fault exception occurs */
   while (1)
   {
@@ -126,6 +134,20 @@ void SysTick_Handler(void)
 {
 	DW1000_SystickCallback();
 	osSystickHandler();
+}
+
+/**
+  * @brief  This function handles OTG_HS Handler.
+  * @param  None
+  * @retval None
+  */
+#ifdef USE_USB_OTG_HS  
+void OTG_HS_IRQHandler(void)
+#else
+void OTG_FS_IRQHandler(void)
+#endif
+{
+  USBD_OTG_ISR_Handler (&USB_OTG_dev);
 }
 
 /**

@@ -17,6 +17,11 @@
 
 #endif
 
+#include "usbd_cdc_core.h"
+#include "usbd_usr.h"
+#include "usb_conf.h"
+#include "usbd_desc.h"
+
 #include "cmsis_os.h"
 
 #endif /* __MAIN_H */

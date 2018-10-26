@@ -19,6 +19,8 @@
 static osTimerId LEDTimerHandle;
 //static osTimerId DebugTimerHandle;
 
+__ALIGN_BEGIN USB_OTG_CORE_HANDLE    USB_OTG_dev __ALIGN_END ;
+
 /* Private function prototypes ----------------------------------------------*/
 static void SystemStartThread(void const *p);
 static void MainControlSubThread(void const *p);
@@ -52,7 +54,13 @@ static void SystemStartThread(void const *p)
 {
 	LED_Init();
 	LOGPortInit();
-	DW1000_If_Init();
+//	DW1000_If_Init();
+
+USBD_Init(&USB_OTG_dev,
+            USB_OTG_FS_CORE_ID,
+            &USR_desc, 
+            &USBD_CDC_cb, 
+            &USR_cb);
 
 	osTimerDef(0, LEDStateTimerCallback);
 	LEDTimerHandle = osTimerCreate(osTimer(0), osTimerPeriodic, NULL);
@@ -96,12 +104,13 @@ static void LEDStateTimerCallback(void const *p)
 
 static void MainControlSubThread(void const *p)
 {
-	instance_main();
+//	instance_main();
 	break_flag = 1;
 	uint32_t PreviousWakeTime = osKernelSysTick();
 	uint32_t DelayTime = configTICK_RATE_HZ / MAIN_CONTROLLER_LOOP_RATE;
 	for(;;) {
 		osDelayUntil(&PreviousWakeTime, DelayTime);
+//		usb_test();
 	}
 }
 
