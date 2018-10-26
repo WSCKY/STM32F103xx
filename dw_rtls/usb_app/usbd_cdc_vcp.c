@@ -274,18 +274,6 @@ static uint16_t VCP_COMConfig(uint8_t Conf)
 //    - Hardware flow control disabled
 //    - Receive and transmit enabled
 //    */
-//    USART_InitStructure.USART_BaudRate = 115200;
-//    USART_InitStructure.USART_WordLength = USART_WordLength_8b;
-//    USART_InitStructure.USART_StopBits = USART_StopBits_1;
-//    USART_InitStructure.USART_Parity = USART_Parity_Odd;
-//    USART_InitStructure.USART_HardwareFlowControl = USART_HardwareFlowControl_None;
-//    USART_InitStructure.USART_Mode = USART_Mode_Rx | USART_Mode_Tx;
-//    
-//    /* Configure and enable the USART */
-//    STM_EVAL_COMInit(COM1, &USART_InitStructure);
-//    
-//    /* Enable the USART Receive interrupt */
-//    USART_ITConfig(EVAL_COM1, USART_IT_RXNE, ENABLE);
 //  }
 //  else
 //  {
@@ -305,7 +293,7 @@ static uint16_t VCP_COMConfig(uint8_t Conf)
 //      VCP_COMConfig(DEFAULT_CONFIG);
 //      return (USBD_FAIL);
 //    }
-//    
+
 //    /* set the parity bit*/
 //    switch (linecoding.paritytype)
 //    {
@@ -322,7 +310,7 @@ static uint16_t VCP_COMConfig(uint8_t Conf)
 //      VCP_COMConfig(DEFAULT_CONFIG);
 //      return (USBD_FAIL);
 //    }
-//    
+
 //    /*set the data type : only 8bits and 9bits is supported */
 //    switch (linecoding.datatype)
 //    {
@@ -339,42 +327,50 @@ static uint16_t VCP_COMConfig(uint8_t Conf)
 //      {
 //        USART_InitStructure.USART_WordLength = USART_WordLength_9b;
 //      }
-//      
+
 //      break;
 //    default :
 //      VCP_COMConfig(DEFAULT_CONFIG);
 //      return (USBD_FAIL);
 //    }
-//    
+
 //    USART_InitStructure.USART_BaudRate = linecoding.bitrate;
 //    USART_InitStructure.USART_HardwareFlowControl = USART_HardwareFlowControl_None;
 //    USART_InitStructure.USART_Mode = USART_Mode_Rx | USART_Mode_Tx;
-//    
+
 //    /* Configure and enable the USART */
 //    STM_EVAL_COMInit(COM1, &USART_InitStructure);
 //  }
   return USBD_OK;
 }
 
-/**
-  * @brief  EVAL_COM_IRQHandler
-  *         
-  * @param  None.
-  * @retval None.
-  */
-//void EVAL_COM_IRQHandler(void)
-//{
-//  if (USART_GetITStatus(EVAL_COM1, USART_IT_RXNE) != RESET)
-//  {
-//    /* Send the received data to the PC Host*/
-//    VCP_DataTx ();
-//  }
+uint16_t USB_CDC_SendChar(uint8_t c)
+{
+  if (linecoding.datatype == 7)
+  {
+    APP_Rx_Buffer[APP_Rx_ptr_in] = c & 0x7F;
+  }
+  else if (linecoding.datatype == 8)
+  {
+    APP_Rx_Buffer[APP_Rx_ptr_in] = c;
+  }
 
-//  /* If overrun condition occurs, clear the ORE flag and recover communication */
-//  if (USART_GetFlagStatus(EVAL_COM1, USART_FLAG_ORE) != RESET)
-//  {
-//    (void)USART_ReceiveData(EVAL_COM1);
-//  }
-//}
+  APP_Rx_ptr_in ++;
+  
+  /* To avoid buffer overflow */
+  if(APP_Rx_ptr_in == APP_RX_DATA_SIZE)
+  {
+    APP_Rx_ptr_in = 0;
+  }  
+
+  return USBD_OK;
+}
+
+void USB_CDC_SendBuffer(uint8_t *Buffer, uint8_t Length)
+{
+	while(Length --) {
+		USB_CDC_SendChar(*Buffer ++);
+	}
+}
 
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/
