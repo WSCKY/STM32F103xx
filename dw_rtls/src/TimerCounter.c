@@ -89,6 +89,32 @@ uint32_t _Get_Secnds(void)
 	return ((_Get_Millis()) / 1000);
 }
 
+/*
+ * delay a time in microsecond.
+ */
+void _delay_us(uint32_t us)
+{
+	uint32_t _start = _Get_Micros();
+	uint32_t _us = us;
+	uint32_t _cur = _start;
+	do {
+		_cur = _Get_Micros();
+	} while((_cur - _start) < _us);
+}
+
+/*
+ * delay a time in millisecond.
+ */
+void _delay_ms(uint32_t ms)
+{
+	uint32_t _start = _Get_Millis();
+	uint32_t _ms = ms;
+	uint32_t _cur = _start;
+	do {
+		_cur = _Get_Millis();
+	} while((_cur - _start) < _ms);
+}
+
 /**
   * @brief  This function handles the TIM3 interrupt request.
   * @param  None
