@@ -28,6 +28,7 @@
 
 /* Includes ------------------------------------------------------------------*/
 #include "usb_bsp.h"
+#include "TimerCounter.h"
 
 /** @addtogroup STM32_USB_OTG_DEVICE_LIBRARY
 * @{
@@ -129,16 +130,7 @@ void USB_OTG_BSP_EnableInterrupt(USB_OTG_CORE_HANDLE *pdev)
 */
 void USB_OTG_BSP_uDelay (const uint32_t usec)
 {
-  uint32_t count = 0;
-  const uint32_t utime = (120 * usec / 7);
-  do
-  {
-    if ( ++count > utime )
-    {
-      return ;
-    }
-  }
-  while (1);
+	_delay_us(usec);
 }
 
 
@@ -150,7 +142,7 @@ void USB_OTG_BSP_uDelay (const uint32_t usec)
 */
 void USB_OTG_BSP_mDelay (const uint32_t msec)
 {
-  USB_OTG_BSP_uDelay(msec * 1000);   
+	_delay_ms(msec);
 }
 /**
 * @}

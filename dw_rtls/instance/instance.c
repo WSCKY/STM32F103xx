@@ -168,7 +168,7 @@ int testapprun(instance_data_t *inst, int message)
                     dwt_configuresleep(sleep_mode, DWT_WAKE_WK|DWT_WAKE_CS|DWT_SLP_EN); //configure the on wake parameters (upload the IC config settings)
 #endif
                     instanceconfigframeheader16(inst);
-                    inst->instanceWakeTime = portGetTickCount();
+                    inst->instanceWakeTime = portGetTickCnt();
                 }
                 break;
                 case ANCHOR:
@@ -231,7 +231,7 @@ int testapprun(instance_data_t *inst, int message)
             inst->instToSleep = FALSE ;
             inst->testAppState = inst->nextState;
             inst->nextState = (INST_STATES)0; //clear
-            inst->instanceWakeTime = portGetTickCount(); // Record the time count when we wake-up
+            inst->instanceWakeTime = portGetTickCnt(); // Record the time count when we wake-up
 #if (DEEP_SLEEP == 1)
             {
                 uint32 x = 0;
@@ -243,7 +243,7 @@ int testapprun(instance_data_t *inst, int message)
 
 								setup_DW1000RSTnIRQ(1); //enable RSTn IRQ
 
-                osDelay(1);//200 us to wake up - need 2 as Sleep(1) is ~ 175 us //workaround changes in decawave
+                port_Delay_MS(1);//200 us to wake up - need 2 as Sleep(1) is ~ 175 us //workaround changes in decawave
 								//then wait 5ms for DW1000 XTAL to stabilise - instead of wait we wait for RSTn to go high
                 //Sleep(5);
 
@@ -256,7 +256,7 @@ int testapprun(instance_data_t *inst, int message)
                 }
 								setup_DW1000RSTnIRQ(0); //disable RSTn IRQ
                 port_SPIx_set_chip_select();  //CS high
-//                osDelay(1);//xtimer_usleep(1000); //workaround changes in decawave
+//                port_Delay_MS(1);//xtimer_usleep(1000); //workaround changes in decawave
 
                 //!!! NOTE it takes ~35us for the DW1000 to download AON and lock the PLL and be in IDLE state
                 //do some dummy reads of the dev ID register to make sure DW1000 is in IDLE before setting LEDs
@@ -280,7 +280,7 @@ int testapprun(instance_data_t *inst, int message)
                 dwt_seteui(inst->eui64);
             }
 #else
-            osDelay(3);//xtimer_usleep(3000);
+            port_Delay_MS(3);//xtimer_usleep(3000);
 #endif
 
             instancesetantennadelays(); //this will update the antenna delay if it has changed
@@ -311,7 +311,7 @@ int testapprun(instance_data_t *inst, int message)
                     inst->newRange = instance_calcranges(&inst->tofArray[0], MAX_ANCHOR_LIST_SIZE, TOF_REPORT_T2A, &inst->rxResponseMask);
                     inst->rxResponseMaskReport = inst->rxResponseMask;
                     inst->rxResponseMask = 0;
-                    inst->newRangeTime = portGetTickCount() ;
+                    inst->newRangeTime = portGetTickCnt() ;
                 }
 
             }

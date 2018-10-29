@@ -51,11 +51,6 @@ void NMI_Handler(void)
 {
 }
 
-__ASM void func(void)
-{
-	BX LR
-}
-
 /**
   * @brief  This function handles Hard Fault exception.
   * @param  None
@@ -63,7 +58,6 @@ __ASM void func(void)
   */
 void HardFault_Handler(void)
 {
-//	func();
   /* Go to infinite loop when Hard Fault exception occurs */
   while (1)
   {
@@ -132,7 +126,6 @@ void DebugMon_Handler(void)
   */
 void SysTick_Handler(void)
 {
-	DW1000_SystickCallback();
 	osSystickHandler();
 }
 

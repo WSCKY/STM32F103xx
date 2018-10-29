@@ -305,12 +305,6 @@ static void GPIO_Configuration(void)
 	EXTI_Init(&EXTI_InitStructure);
 }
 
-int time32_incr = 0;
-void DW1000_SystickCallback(void)
-{
-	time32_incr ++;
-}
-
 void _DW_IRQn_GPIO_EXTI_IRQHandler(void)
 {
 	process_deca_irq();

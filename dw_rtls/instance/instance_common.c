@@ -595,7 +595,7 @@ void instance_txcallback(const dwt_callback_data_t *txd)
     uint8 txevent = txd->event;
     event_data_t dw_event;
 
-    dw_event.uTimeStamp = portGetTickCount();
+    dw_event.uTimeStamp = portGetTickCnt();
 
     if(txevent == DWT_SIG_TX_DONE)
     {
@@ -1017,7 +1017,7 @@ void instance_rxcallback(const dwt_callback_data_t *rxd)
     event_data_t dw_event;
 
     //microcontroller time at which we received the frame
-    dw_event.uTimeStamp = portGetTickCount();
+    dw_event.uTimeStamp = portGetTickCnt();
 
     //if we got a frame with a good CRC - RX OK
     if(rxd->event == DWT_SIG_RX_OKAY)
@@ -1451,7 +1451,7 @@ int instance_run(void)
     {
         if(instance_data[instance].mode == TAG)
         {
-            if((portGetTickCount() - instance_data[instance].instanceWakeTime) > instance_data[instance].nextSleepPeriod)
+            if((portGetTickCnt() - instance_data[instance].instanceWakeTime) > instance_data[instance].nextSleepPeriod)
             {
                 event_data_t dw_event;
                 instance_data[instance].instanceTimerEn = 0;
@@ -1465,7 +1465,7 @@ int instance_run(void)
 #if (ANCTOANCTWR == 1) //allow anchor to anchor ranging
         else if(instance_data[instance].mode == ANCHOR)
         {
-            uint32_t slotTime = portGetTickCount() % instance_data[instance].sframePeriod;
+            uint32_t slotTime = portGetTickCnt() % instance_data[instance].sframePeriod;
 
             if(instance_data[instance].gatewayAnchor)
             {
@@ -1488,7 +1488,7 @@ int instance_run(void)
             }
             else if (instance_data[instance].instanceAddress16 == A1_ANCHOR_ADDR) //A1 ranges to A2 in the 2nd half of last slot
             {
-                if(portGetTickCount() >= instance_data[instance].a1SlotTime)
+                if(portGetTickCnt() >= instance_data[instance].a1SlotTime)
                 {
                     port_DisableEXT_IRQ(); //enable ScenSor IRQ before starting
                     //anchor1 sends poll to anchor2
@@ -1514,7 +1514,7 @@ int instance_run(void)
     {
         if((instance_data[instance].mode == ANCHOR) && (instance_data[instance].gatewayAnchor))
         {
-            uint32_t slotTime = portGetTickCount() % instance_data[instance].sframePeriod;
+            uint32_t slotTime = portGetTickCnt() % instance_data[instance].sframePeriod;
             //enable the timer in 1st slot
             if(slotTime < instance_data[instance].slotPeriod)
             {
@@ -1533,10 +1533,10 @@ void instance_close(void)
     //NOTE - in the ARM  code just drop chip select for 200us
     port_SPIx_clear_chip_select();  //CS low
     //200 us to wake up then waits 5ms for DW1000 XTAL to stabilise
-    osDelay(1);
+    port_Delay_MS(1);
 
     port_SPIx_set_chip_select();  //CS high
-    osDelay(5);
+    port_Delay_MS(5);
 
     dwt_entersleepaftertx(0); // clear the "enter deep sleep after tx" bit
 

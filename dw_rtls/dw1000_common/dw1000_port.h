@@ -29,16 +29,14 @@ extern "C" {
 
 #include "DW1000.h"
 #include "dw1000_device_api.h"
-#include "cmsis_os.h"
+#include "TimerCounter.h"
 
 #define writetospi                     DW1000_SPI_Write
 #define readfromspi                    DW1000_SPI_Read
 
 void SPI_ChangeRate(uint16_t scalingfactor);
 
-unsigned long portGetTickCnt(void);
-
-#define portGetTickCount()             portGetTickCnt()
+#define portGetTickCnt()               _Get_Millis()
 
 void setup_DW1000RSTnIRQ(int enable);
 
@@ -71,6 +69,11 @@ void setup_DW1000RSTnIRQ(int enable);
  * @brief This function checks external IRQ status
  */
 #define port_CheckEXT_IRQ              _DW_IRQn_GET_LEVEL
+
+/**
+ * @brief This function provides a time delay in milliseconds
+ */
+#define port_Delay_MS                  _delay_ms
 
 #ifdef __cplusplus
 }

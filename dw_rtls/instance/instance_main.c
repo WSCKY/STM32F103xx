@@ -216,10 +216,10 @@ uint32 inittestapplication(uint8 s1switch)
 	if(DWT_DEVICE_ID != devID) { //if the read of device ID fails, the DW1000 could be asleep
 		port_SPIx_clear_chip_select();  //CS low
 		//200 us to wake up then waits 5ms for DW1000 XTAL to stabilise
-		osDelay(1);
+		port_Delay_MS(1);
 		port_SPIx_set_chip_select();  //CS high
 		//200 us to wake up then waits 5ms for DW1000 XTAL to stabilise
-		osDelay(7);
+		port_Delay_MS(7);
 		devID = instancereaddeviceid();
 	}
 	printf("DW1000 Device Id:%x\n",(unsigned int)devID);
@@ -302,7 +302,7 @@ void configure_continuous_txspectrum_mode(uint8 s1switch)
     //user has to reset the board to exit mode
     while(1)
     {
-			osDelay(2);
+			port_Delay_MS(2);
 //        xtimer_usleep(2000);
     }
 
@@ -346,7 +346,7 @@ int instance_main(void)
     while(1)
     {
         int monitor_local = instance_data[0].monitor ;
-        int txdiff = (portGetTickCount() - instance_data[0].timeofTx);
+        int txdiff = (portGetTickCnt() - instance_data[0].timeofTx);
 
         instance_run();
         instance_mode = instancegetrole();
