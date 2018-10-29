@@ -96,7 +96,7 @@ extern "C" {
 #define MAX_USER_PAYLOAD_STRING MAX_USER_PAYLOAD_STRING_LL
 
 #define MAX_TAG_LIST_SIZE               (1)
-#define MAX_ANCHOR_LIST_SIZE            (1) //this is limited to 4 in this application
+#define MAX_ANCHOR_LIST_SIZE            (4) //this is limited to 4 in this application
 #define NUM_EXPECTED_RESPONSES          (3) //e.g. MAX_ANCHOR_LIST_SIZE - 1
 #define NUM_EXPECTED_RESPONSES_ANC      (1) //anchors A0, A1 and A2 are involved in anchor to anchor ranging
 #define NUM_EXPECTED_RESPONSES_ANC0     (2) //anchor A0 expects response from A1 and A2

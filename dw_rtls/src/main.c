@@ -54,7 +54,7 @@ static void SystemStartThread(void const *p)
 {
 	LED_Init();
 	LOGPortInit();
-//	DW1000_If_Init();
+	DW1000_If_Init();
 
 	USBD_Init(&USB_OTG_dev,
             USB_OTG_FS_CORE_ID,
@@ -104,13 +104,13 @@ static void LEDStateTimerCallback(void const *p)
 
 static void MainControlSubThread(void const *p)
 {
-//	instance_main();
+	instance_main();
 	break_flag = 1;
 	uint32_t PreviousWakeTime = osKernelSysTick();
 	uint32_t DelayTime = 500;//configTICK_RATE_HZ / MAIN_CONTROLLER_LOOP_RATE;
 	for(;;) {
 		osDelayUntil(&PreviousWakeTime, DelayTime);
-		USB_CDC_SendBuffer((uint8_t *)"Hello.\n", 8);
+//		USB_CDC_SendBuffer((uint8_t *)"Hello.\n", 8);
 	}
 }
 

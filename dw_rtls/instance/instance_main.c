@@ -21,14 +21,10 @@
  */
 
 /* Includes */
-//#include "dw1000_compiler.h"
 #include "dw1000_port.h"
-//#include "dw1000_board.h"
-
 #include "dw1000_instance.h"
 #include "instance_main.h"
 #include "dw1000_device_api.h"
-//#include "xtimer.h"
 #include "cmsis_os.h"
 #include <stdio.h>
 #include "dw1000_types.h"
@@ -52,10 +48,6 @@ int dr_mode = 0;
 int chan, tagaddr, ancaddr;
 int instance_mode = ANCHOR;
 
-uint32_t pauseTWRReports  = 0;
-uint32_t printLCDTWRReports  = 0;
-uint8_t sendTWRRawReports = 1;
-void dw1000_board_init(void);
 typedef struct
 {
     uint8 channel ;
@@ -225,11 +217,9 @@ uint32 inittestapplication(uint8 s1switch)
 		port_SPIx_clear_chip_select();  //CS low
 		//200 us to wake up then waits 5ms for DW1000 XTAL to stabilise
 		osDelay(1);
-//        xtimer_usleep(1000);
 		port_SPIx_set_chip_select();  //CS high
 		//200 us to wake up then waits 5ms for DW1000 XTAL to stabilise
 		osDelay(7);
-//        xtimer_usleep(7000);
 		devID = instancereaddeviceid();
 	}
 	printf("DW1000 Device Id:%x\n",(unsigned int)devID);
@@ -287,23 +277,14 @@ uint32 inittestapplication(uint8 s1switch)
 */
 void process_dwRSTn_irq(void)
 {
-    instance_notify_DW1000_inIDLE(1);
+	instance_notify_DW1000_inIDLE(1);
 }
 
 void process_deca_irq(void)
 {
-//#ifndef RIOT_TREK_DW1000_APP
-//    while(port_CheckEXT_IRQ() == 1) ; //while IRS line active (ARM can only do edge sensitive interrupts)
-//    {
-//        instance_process_irq(0);
-//    }
-//#else // TBD : Nucleo fix with while(port_CheckEXT_IRQ() == 1);
-    do{
-
-        instance_process_irq(0);
-    }
-    while(port_CheckEXT_IRQ() == 1); //while IRS line active (ARM can only do edge sensitive interrupts)
-//#endif
+	do {
+		instance_process_irq(0);
+	} while(port_CheckEXT_IRQ() == 1); //while IRS line active (ARM can only do edge sensitive interrupts)
 }
 
 void configure_continuous_txspectrum_mode(uint8 s1switch)
@@ -344,8 +325,6 @@ int instance_main(void)
 		if(Unitid == 1) Unitid = 4;
 
 		s1switch = 0x01 | ( Unit << 3 ) | ( Mode << 1) | ( Unitid  << 4 );
-
-//    dw1000_board_init();
 
     port_DisableEXT_IRQ(); //disable ScenSor IRQ until we configure the device
 
@@ -418,52 +397,7 @@ int instance_main(void)
             aaddr = instancenewrangeancadd() & 0xf;
             taddr = instancenewrangetagadd() & 0xf;
             rangeTime = instancenewrangetim() & 0xffffffff;
-//#if (LCD_UPDATE_ON == 1)
-//            //if((dr_mode & 0x1) == 0) //only print for 110k
-//            if(printLCDTWRReports + 2000 <= portGetTickCnt())
-//            {
-//                //anchors will print a range to each tag in sequence with 1 second pause
-//                //they will show the last rage to that tag
-//                if(instance_mode == ANCHOR)
-//                {
-//                    int b = 0;
-//                    double rangetotag = getTagDist(toggle) ;
 
-//                    while(((int) (rangetotag*1000)) == 0) //if 0 then go to next tag
-//                    {
-//                        if(b > MAX_TAG_LIST_SIZE)
-//                            break;
-
-//                        toggle++;
-//                        if(toggle >= MAX_TAG_LIST_SIZE)
-//                            toggle = 0;
-
-//                        rangetotag = getTagDist(toggle) ;
-//                        b++;
-//                    }
-
-//                    ancaddr = instance_anchaddr;
-//                    printf("ANCHOR: A%d T%d: %3.2f\n", ancaddr, toggle, rangetotag);
-//                    toggle++;
-
-//                    if(toggle >= MAX_TAG_LIST_SIZE)
-//                        toggle = 0;
-//                }
-//                else if(instance_mode == TAG)
-//                {
-//                    //toggle = 1;
-//                    tagaddr = instance_anchaddr;
-//                    printf("TAG: T%d  A%d: %3.2f\n", tagaddr, toggle, instancegetidist(toggle));
-//                    toggle++;
-
-//                    if(toggle >= MAX_ANCHOR_LIST_SIZE)
-//                        toggle = 0;
-//                }
-
-//                //update the print time
-//                printLCDTWRReports = portGetTickCnt();
-//            }
-//#endif
             l = instancegetlcount() & 0xFFFF;
             if(instance_mode == TAG)
             {
@@ -487,15 +421,12 @@ int instance_main(void)
                        instancegetidist_mm(2), instancegetidist_mm(3), l, r,
                        rangeTime, (instance_mode == TAG)?'t':'a', taddr, aaddr);
 
+								/* TWR RAW Report */
+								printf("mr %02x %08x %08x %08x %08x %04x %02x %04x%04x %c%d:%d\r\n",
+												valid, instancegetidistraw_mm(0), instancegetidistraw_mm(1),
+												instancegetidistraw_mm(2), instancegetidistraw_mm(3),
+												l, r, txa, rxa, (instance_mode == TAG)?'t':'a', taddr, aaddr);
 
-                if(sendTWRRawReports == 1)
-                {
-                    printf("mr %02x %08x %08x %08x %08x %04x %02x %04x%04x %c%d:%d\r\n",
-                            valid, instancegetidistraw_mm(0), instancegetidistraw_mm(1),
-                            instancegetidistraw_mm(2), instancegetidistraw_mm(3),
-                            l, r, txa, rxa, (instance_mode == TAG)?'t':'a', taddr, aaddr);
-
-                }
             }
             else //anchor to anchor ranging
             {
