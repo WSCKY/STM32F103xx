@@ -6,6 +6,7 @@
 #include "LED.h"
 #include "Debug.h"
 #include "LogPort.h"
+#include "TimerCounter.h"
 
 #include "DW1000.h"
 #include "instance_main.h"
