@@ -3,12 +3,14 @@
 static uint16_t _rsp_tick = 0;
 static CommPackageDef TxPacket = {Header1, Header2};
 
+static uint8_t _heart_beat = 0;
+
 void HostRespTask(uint8_t millis)
 {
 	if(_rsp_tick % 10 == 0) {
 		TxPacket.Packet.type = TYPE_COM_HEARTBEAT;
 		TxPacket.Packet.len = 3;
-		TxPacket.Packet.PacketData.Heartbeat._Cnt = 22;
+		TxPacket.Packet.PacketData.Heartbeat._Cnt = _heart_beat ++;
 		SendTxPacket(&TxPacket);
 	} else if(_rsp_tick % 10 == 3) {
 //		TxPacket.Packet.type = TYPE_DevSta_Response;
