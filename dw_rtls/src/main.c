@@ -87,6 +87,7 @@ static void LEDStateTimerCallback(void const *p)
 	LED1_TOG();
 	if(break_flag)
 		LED2_TOG();
+  USB_CDC_SendBufferFast((uint8_t *)"Hello kyChu!\n", 13);
 }
 
 //static void DebugSendTimerCallback(void const *p)
