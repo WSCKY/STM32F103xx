@@ -129,7 +129,7 @@ void DebugPortSendBytesDMA(uint8_t *p, uint32_t l)
 void DEBUG_USART_IRQHandler(void)
 {
 	if(SET == USART_GetITStatus(DEBUG_USART, USART_IT_RXNE)) {
-		UartxReceivedDataCallBack(DEBUG_USART->DR);
+//		UartxReceivedDataCallBack(DEBUG_USART->DR);
 		USART_ClearFlag(DEBUG_USART, USART_FLAG_RXNE);
 	}
 }

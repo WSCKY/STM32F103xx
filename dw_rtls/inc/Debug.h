@@ -19,6 +19,6 @@
 
 void DebugPortInit(void);
 void DebugPortSendBytesDMA(uint8_t *p, uint32_t l);
-void UartxReceivedDataCallBack(uint8_t Data);
+//void UartxReceivedDataCallBack(uint8_t Data);
 
 #endif /* __DEBUG_H */
