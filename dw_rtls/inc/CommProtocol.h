@@ -48,7 +48,7 @@ __packed typedef enum {
 	/* Protocol Version */
 	TYPE_VERSION_REQUEST = 0x02,
 	TYPE_VERSION_Response = 0x03,
-#if defined(USER_TYPE)
+#if defined(COM_USER_TYPE)
   COM_USER_TYPE
 #endif
 } PACKET_TYPE;
@@ -66,7 +66,7 @@ __packed typedef union {
 	HeartBeatDef Heartbeat;
 //	DevStateResponseDef DevSta;
 	VersionResponseDef Version;
-#if defined(USER_TYPE_DATA)
+#if defined(COM_USER_TYPE_DATA)
   COM_USER_TYPE_DATA
 #endif
 } PacketDataUnion;
