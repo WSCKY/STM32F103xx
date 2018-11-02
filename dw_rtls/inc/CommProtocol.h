@@ -45,12 +45,6 @@ __packed typedef enum {
 __packed typedef enum {
 	/* Communication Heartbeat */
 	TYPE_COM_HEARTBEAT = 0x01,
-//	/* Device Status, see DeviceState.txt */
-//	TYPE_DevSta_Response = 0x11,
-//	/* Device Control, see DeviceControl.txt */
-//	TYPE_LED_CTRL_Request = 0x21,
-//	TYPE_BAR_MODE_Request = 0x22,
-//	TYPE_DOOR_CTRL_Request = 0x23,
 	/* Protocol Version */
 	TYPE_VERSION_REQUEST = 0x02,
 	TYPE_VERSION_Response = 0x03,
@@ -62,14 +56,6 @@ __packed typedef enum {
 __packed typedef struct {
 	uint8_t _Cnt;
 } HeartBeatDef;
-
-//__packed typedef struct {
-//	uint8_t CtrlReady;
-//	float Voltage;
-//	uint8_t BinSigState;
-//	uint8_t LEDBarState;
-//	uint8_t DoorsState;
-//} DevStateResponseDef;
 
 __packed typedef struct {
 	uint16_t v;
