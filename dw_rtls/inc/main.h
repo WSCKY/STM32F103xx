@@ -18,6 +18,8 @@
 
 #endif
 
+#include "HostRespTask.h"
+
 #include "usbd_cdc_core.h"
 #include "usbd_usr.h"
 #include "usb_conf.h"
