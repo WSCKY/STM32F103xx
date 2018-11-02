@@ -4,6 +4,8 @@ static uint16_t _rsp_tick = 0;
 static CommPackageDef TxPacket = {Header1, Header2};
 
 static uint8_t _heart_beat = 0;
+static uint8_t _dist_update = 0;
+static uint32_t _dist_value = 0;
 
 void HostRespTask(uint8_t millis)
 {
@@ -13,14 +15,15 @@ void HostRespTask(uint8_t millis)
 		TxPacket.Packet.PacketData.Heartbeat._Cnt = _heart_beat ++;
 		SendTxPacket(&TxPacket);
 	} else if(_rsp_tick % 10 == 3) {
-//		TxPacket.Packet.type = TYPE_DevSta_Response;
-//		TxPacket.Packet.len = 10;
-//		TxPacket.Packet.PacketData.DevSta.CtrlReady = 0x01;
-//		TxPacket.Packet.PacketData.DevSta.Voltage = GetSystemVoltage();
-//		TxPacket.Packet.PacketData.DevSta.DoorsState = (GetDoorState_B() << 4) | GetDoorState_A(); /* Door Control Status */
-//		TxPacket.Packet.PacketData.DevSta.BinSigState = BinSigStatus;
-//		TxPacket.Packet.PacketData.DevSta.LEDBarState = GetLED_BarMode();
-//		SendTxPacket(&TxPacket);
+    if(_dist_update == 1) {
+      TxPacket.Packet.type = TYPE_DIST_Response;
+      TxPacket.Packet.len = 8;
+      TxPacket.Packet.PacketData.DistData.InstType = TAG;
+      TxPacket.Packet.PacketData.DistData.InstId = 0;
+      TxPacket.Packet.PacketData.DistData.Distance = _dist_value;
+      SendTxPacket(&TxPacket);
+    }
+    _dist_update = 0;
 	} else if(_rsp_tick % 10 == 8) {
 //		if(VersionRequestFlag == 1) {
 //			VersionRequestFlag = 0;
@@ -32,4 +35,10 @@ void HostRespTask(uint8_t millis)
 	}
 	_rsp_tick ++;
 	if(_rsp_tick >= 60000) _rsp_tick = 0;
+}
+
+void update_dist(int dist)
+{
+  _dist_update = 1;
+  _dist_value = dist;
 }
