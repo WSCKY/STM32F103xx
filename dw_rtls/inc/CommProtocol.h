@@ -1,7 +1,30 @@
 #ifndef __COMMPROTOCOL_H
 #define __COMMPROTOCOL_H
 
-#include "Debug.h"
+#include "ComIf_conf.h"
+#include "ComVersion.h"
+
+/* exact-width signed integer types */
+#ifndef int8_t
+typedef   signed          char int8_t;
+#endif
+#ifndef int16_t
+typedef   signed short     int int16_t;
+#endif
+#ifndef int32_t
+typedef   signed           int int32_t;
+#endif
+
+/* exact-width unsigned integer types */
+#ifndef uint8_t
+typedef unsigned          char uint8_t;
+#endif
+#ifndef uint16_t
+typedef unsigned short     int uint16_t;
+#endif
+#ifndef uint32_t
+typedef unsigned           int uint32_t;
+#endif
 
 #define Header1              (0x55)
 #define Header2              (0xAA)
@@ -20,30 +43,33 @@ __packed typedef enum {
 } DECODE_STATE;
 
 __packed typedef enum {
-	/* Heartbeat, see HeartBeat.txt */
+	/* Communication Heartbeat */
 	TYPE_COM_HEARTBEAT = 0x01,
-	/* Device Status, see DeviceState.txt */
-	TYPE_DevSta_Response = 0x11,
-	/* Device Control, see DeviceControl.txt */
-	TYPE_LED_CTRL_Request = 0x21,
-	TYPE_BAR_MODE_Request = 0x22,
-	TYPE_DOOR_CTRL_Request = 0x23,
-	/* Board Firmware Version, see VersionRequest.txt */
-	TYPE_VERSION_REQUEST = 0x66,
-	TYPE_VERSION_Response = 0x67,
+//	/* Device Status, see DeviceState.txt */
+//	TYPE_DevSta_Response = 0x11,
+//	/* Device Control, see DeviceControl.txt */
+//	TYPE_LED_CTRL_Request = 0x21,
+//	TYPE_BAR_MODE_Request = 0x22,
+//	TYPE_DOOR_CTRL_Request = 0x23,
+	/* Protocol Version */
+	TYPE_VERSION_REQUEST = 0x02,
+	TYPE_VERSION_Response = 0x03,
+#if defined(USER_TYPE)
+  COM_USER_TYPE
+#endif
 } PACKET_TYPE;
 
 __packed typedef struct {
 	uint8_t _Cnt;
 } HeartBeatDef;
 
-__packed typedef struct {
-	uint8_t CtrlReady;
-	float Voltage;
-	uint8_t BinSigState;
-	uint8_t LEDBarState;
-	uint8_t DoorsState;
-} DevStateResponseDef;
+//__packed typedef struct {
+//	uint8_t CtrlReady;
+//	float Voltage;
+//	uint8_t BinSigState;
+//	uint8_t LEDBarState;
+//	uint8_t DoorsState;
+//} DevStateResponseDef;
 
 __packed typedef struct {
 	uint16_t v;
@@ -52,8 +78,11 @@ __packed typedef struct {
 __packed typedef union {
 	uint8_t pData[PACKET_CACHE - 5];
 	HeartBeatDef Heartbeat;
-	DevStateResponseDef DevSta;
+//	DevStateResponseDef DevSta;
 	VersionResponseDef Version;
+#if defined(USER_TYPE_DATA)
+  COM_USER_TYPE_DATA
+#endif
 } PacketDataUnion;
 
 __packed typedef struct {
@@ -75,5 +104,14 @@ __packed typedef union {
 uint8_t GotNewData(void);
 CommPackageDef* GetRxPacket(void);
 void SendTxPacket(CommPackageDef* pPacket);
+void ComIfRecDataCallBack(uint8_t Data);
+
+#ifndef COM_IF_TX_CHECK
+  #define COM_IF_TX_CHECK()    (1)
+#endif /* COM_IF_TX_CHECK */
+
+#ifndef COM_IF_TX_BYTES
+  #define COM_IF_TX_BYTES(...) ((void)0)
+#endif /* COM_IF_TX_BYTES */
 
 #endif /* __COMMPROTOCOL */

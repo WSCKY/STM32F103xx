@@ -10,7 +10,7 @@ DECODE_STATE _decode_state = DECODE_STATE_UNSYNCED;
 
 static void rx_decode(uint8_t data);
 
-void UartxReceivedDataCallBack(uint8_t Data)
+void ComIfRecDataCallBack(uint8_t Data)
 {
 	rx_decode(Data);
 }
@@ -33,7 +33,8 @@ void SendTxPacket(CommPackageDef* pPacket)
 {
 	pPacket->Packet.crc = Get_CRC8_Check_Sum(&(pPacket->RawData[2]), pPacket->Packet.len, CRC_INIT);
 	pPacket->Packet.PacketData.pData[pPacket->Packet.len - 2] = pPacket->Packet.crc;
-	DebugPortSendBytesDMA(pPacket->RawData, pPacket->Packet.len + 3);
+  if(COM_IF_TX_CHECK())
+    COM_IF_TX_BYTES(pPacket->RawData, pPacket->Packet.len + 3);
 }
 
 static void rx_decode(uint8_t data)
