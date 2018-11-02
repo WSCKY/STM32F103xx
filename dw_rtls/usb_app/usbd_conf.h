@@ -95,7 +95,10 @@
 
 /** @defgroup USB_CONF_Exported_FunctionsPrototype
   * @{
-  */ 
+  */
+
+uint8_t USBD_isEnabled(void);
+
 /**
   * @}
   */ 
