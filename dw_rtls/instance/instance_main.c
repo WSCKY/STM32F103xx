@@ -307,7 +307,7 @@ void configure_continuous_txspectrum_mode(uint8 s1switch)
     }
 
 }
-
+extern void update_dist(int dist);
 /*
  * @fn      main()
  * @brief   main entry point
@@ -416,25 +416,25 @@ int instance_main(void)
                 //correction = instance_data[0].tagSleepCorrection2;
                 // anchorID tagID range rangeraw countofranges rangenum rangetime txantdly rxantdly address
 
-                printf("mc %02x %08x %08x %08x %08x %04x %02x %08x %c%d:%d \n",
-                       valid, instancegetidist_mm(0), instancegetidist_mm(1),
-                       instancegetidist_mm(2), instancegetidist_mm(3), l, r,
-                       rangeTime, (instance_mode == TAG)?'t':'a', taddr, aaddr);
-
-								/* TWR RAW Report */
-								printf("mr %02x %08x %08x %08x %08x %04x %02x %04x%04x %c%d:%d\r\n",
-												valid, instancegetidistraw_mm(0), instancegetidistraw_mm(1),
-												instancegetidistraw_mm(2), instancegetidistraw_mm(3),
-												l, r, txa, rxa, (instance_mode == TAG)?'t':'a', taddr, aaddr);
+//                printf("mc %02x %08x %08x %08x %08x %04x %02x %08x %c%d:%d \n",
+//                       valid, instancegetidist_mm(0), instancegetidist_mm(1),
+//                       instancegetidist_mm(2), instancegetidist_mm(3), l, r,
+//                       rangeTime, (instance_mode == TAG)?'t':'a', taddr, aaddr);
+update_dist(instancegetidist_mm(0));
+//								/* TWR RAW Report */
+//								printf("mr %02x %08x %08x %08x %08x %04x %02x %04x%04x %c%d:%d\r\n",
+//												valid, instancegetidistraw_mm(0), instancegetidistraw_mm(1),
+//												instancegetidistraw_mm(2), instancegetidistraw_mm(3),
+//												l, r, txa, rxa, (instance_mode == TAG)?'t':'a', taddr, aaddr);
 
             }
-            else //anchor to anchor ranging
-            {
-                printf( "ma %02x %08x %08x %08x %08x %04x %02x %08x a0:%d\r\n",
-                        valid, instancegetidist_mm(0), instancegetidist_mm(1),
-                        instancegetidist_mm(2), instancegetidist_mm(3),
-                        l, instancegetrnumanc(0), rangeTime, aaddr);
-            }
+//            else //anchor to anchor ranging
+//            {
+//                printf( "ma %02x %08x %08x %08x %08x %04x %02x %08x a0:%d\r\n",
+//                        valid, instancegetidist_mm(0), instancegetidist_mm(1),
+//                        instancegetidist_mm(2), instancegetidist_mm(3),
+//                        l, instancegetrnumanc(0), rangeTime, aaddr);
+//            }
             instancecleardisttableall();
         } //if new range present
     }
