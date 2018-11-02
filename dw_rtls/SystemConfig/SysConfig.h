@@ -18,6 +18,6 @@
 
 #define BATTERY_VOLT_AMPL_FACTOR       (21.0f / 1.0f)
 
-#define DEBUG_MODE                     (1)
+#define DEBUG_MODE                     (0)
 
 #endif /* __SYSCONFIG_H */
