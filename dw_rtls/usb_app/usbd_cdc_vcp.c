@@ -65,6 +65,8 @@ static uint16_t VCP_DataRx   (uint8_t* Buf, uint32_t Len);
 
 static uint16_t VCP_COMConfig(uint8_t Conf);
 
+static void BufferCopy(uint8_t *pSrc, uint8_t *pDst, uint32_t Length);
+
 CDC_IF_Prop_TypeDef VCP_fops = 
 {
   VCP_Init,
@@ -366,11 +368,46 @@ uint16_t USB_CDC_SendChar(uint8_t c)
   return USBD_OK;
 }
 
-void USB_CDC_SendBuffer(uint8_t *Buffer, uint8_t Length)
+void USB_CDC_SendCharFast(uint8_t c)
+{
+  APP_Rx_Buffer[APP_Rx_ptr_in ++] = c;
+  /* To avoid buffer overflow */
+  if(APP_Rx_ptr_in == APP_RX_DATA_SIZE)
+    APP_Rx_ptr_in = 0;
+}
+
+void USB_CDC_SendBuffer(uint8_t *pBuffer, uint8_t Length)
 {
 	while(Length --) {
-		USB_CDC_SendChar(*Buffer ++);
+		USB_CDC_SendChar(*pBuffer ++);
 	}
+}
+
+void USB_CDC_SendBufferFast(uint8_t *pBuffer, uint8_t Length)
+{
+  do {
+    if(APP_Rx_ptr_in + Length <= APP_RX_DATA_SIZE) {
+      BufferCopy(pBuffer, APP_Rx_Buffer + APP_Rx_ptr_in, Length);
+      APP_Rx_ptr_in += Length;
+      Length = 0;
+    } else {
+      BufferCopy(pBuffer, APP_Rx_Buffer + APP_Rx_ptr_in, APP_RX_DATA_SIZE - APP_Rx_ptr_in);
+      Length = APP_RX_DATA_SIZE - APP_Rx_ptr_in;
+      APP_Rx_ptr_in = 0;
+    }
+  } while(Length);
+  /* To avoid buffer overflow */
+  if(APP_Rx_ptr_in == APP_RX_DATA_SIZE)
+    APP_Rx_ptr_in = 0;
+}
+
+static void BufferCopy(uint8_t *pSrc, uint8_t *pDst, uint32_t Length)
+{
+  while(Length --) {
+    *pDst = *pSrc;
+    pDst ++;
+    pSrc ++;
+  }
 }
 
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/
