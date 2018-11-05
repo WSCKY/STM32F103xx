@@ -18,7 +18,7 @@
 static osTimerId TaskTimerHandle;
 static osTimerId StateTimerHandle;
 
-xQueueHandle xQueueUpdate;
+SemaphoreHandle_t xSemaphoreUpdate = NULL;
 
 __ALIGN_BEGIN USB_OTG_CORE_HANDLE    USB_OTG_dev __ALIGN_END ;
 
@@ -63,6 +63,9 @@ static void SystemStartThread(void const *p)
             &USR_desc,
             &USBD_CDC_cb,
             &USR_cb);
+
+  xSemaphoreUpdate = xSemaphoreCreateBinary();
+  if(xSemaphoreUpdate == NULL) for(;;);
 
 	osTimerDef(0, TaskTimerCallback);
 	TaskTimerHandle = osTimerCreate(osTimer(0), osTimerPeriodic, NULL);
@@ -112,7 +115,6 @@ static void MainThread(void const *p)
 
 static void DataSendThread(void const *p)
 {
-  xQueueUpdate = xQueueCreate(5, sizeof(DistDataRespDef *));
   for(;;) {
     HostRespTask();
   }

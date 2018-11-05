@@ -307,7 +307,8 @@ void configure_continuous_txspectrum_mode(uint8 s1switch)
     }
 
 }
-extern void update_dist(int dist);
+
+extern SemaphoreHandle_t xSemaphoreUpdate;
 /*
  * @fn      main()
  * @brief   main entry point
@@ -315,7 +316,7 @@ extern void update_dist(int dist);
 int rx = 0;
 int instance_main(void)
 {
-    int Unit = 0, Unitid = 0, Mode = 0;
+    int Unit = 1, Unitid = 2, Mode = 0;
 
 		printf("    DW1000 Device Configuration.    \n");
 		printf("Mode Config:  Mode-%d.\n", Mode);
@@ -388,28 +389,28 @@ int instance_main(void)
         //to output over USB - Virtual COM port, and update the LCD
         if(rx != TOF_REPORT_NUL)
         {
-            int l = 0, r= 0, aaddr, taddr;
-            int rangeTime, valid;
+//            int l = 0, r= 0, aaddr, taddr;
+//            int rangeTime, valid;
             //int correction ;
-            uint16 txa, rxa;
+//            uint16 txa, rxa;
 
             //send the new range information to LCD and/or USB
-            aaddr = instancenewrangeancadd() & 0xf;
-            taddr = instancenewrangetagadd() & 0xf;
-            rangeTime = instancenewrangetim() & 0xffffffff;
+//            aaddr = instancenewrangeancadd() & 0xf;
+//            taddr = instancenewrangetagadd() & 0xf;
+//            rangeTime = instancenewrangetim() & 0xffffffff;
 
-            l = instancegetlcount() & 0xFFFF;
-            if(instance_mode == TAG)
-            {
-                r = instancegetrnum();
-            }
-            else
-            {
-                r = instancegetrnuma(taddr);
-            }
-            txa =  instancetxantdly();
-            rxa =  instancerxantdly();
-            valid = instancevalidranges();
+//            l = instancegetlcount() & 0xFFFF;
+//            if(instance_mode == TAG)
+//            {
+//                r = instancegetrnum();
+//            }
+//            else
+//            {
+//                r = instancegetrnuma(taddr);
+//            }
+//            txa =  instancetxantdly();
+//            rxa =  instancerxantdly();
+//            valid = instancevalidranges();
 
             if(rx == TOF_REPORT_T2A)
             {
@@ -420,22 +421,19 @@ int instance_main(void)
 //                       valid, instancegetidist_mm(0), instancegetidist_mm(1),
 //                       instancegetidist_mm(2), instancegetidist_mm(3), l, r,
 //                       rangeTime, (instance_mode == TAG)?'t':'a', taddr, aaddr);
-update_dist(instancegetidist_mm(0));
+xSemaphoreGive(xSemaphoreUpdate);
 //								/* TWR RAW Report */
 //								printf("mr %02x %08x %08x %08x %08x %04x %02x %04x%04x %c%d:%d\r\n",
 //												valid, instancegetidistraw_mm(0), instancegetidistraw_mm(1),
 //												instancegetidistraw_mm(2), instancegetidistraw_mm(3),
 //												l, r, txa, rxa, (instance_mode == TAG)?'t':'a', taddr, aaddr);
-
-            }
-//            else //anchor to anchor ranging
-//            {
+            } else { //anchor to anchor ranging
 //                printf( "ma %02x %08x %08x %08x %08x %04x %02x %08x a0:%d\r\n",
 //                        valid, instancegetidist_mm(0), instancegetidist_mm(1),
 //                        instancegetidist_mm(2), instancegetidist_mm(3),
 //                        l, instancegetrnumanc(0), rangeTime, aaddr);
-//            }
-            instancecleardisttableall();
+            }
+//            instancecleardisttableall();
         } //if new range present
     }
 
