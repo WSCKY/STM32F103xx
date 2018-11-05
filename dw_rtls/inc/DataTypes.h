@@ -8,7 +8,8 @@
 __packed typedef struct {
   INST_MODE InstType;
   uint8_t InstId;
-  uint32_t Distance;
+  uint8_t ListSize;
+  uint32_t Distance[MAX_ANCHOR_LIST_SIZE];
 } DistDataRespDef;
 
 #endif /* __DATATYPES_H */
