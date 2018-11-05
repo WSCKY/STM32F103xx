@@ -6,6 +6,12 @@
 /* main controller loop rate (in Hz) */
 #define MAIN_CONTROLLER_LOOP_RATE      (200)
 
+/* task timer rate */
+#define TASK_TIMER_RATE                (100)
+
+/* indicator timer rate */
+#define STATE_TIMER_RATE               (20)
+
 /* LED flash rate define */
 #define LED_FLASH_RATE_WAIT_STABLE     (10)
 #define LED_FLASH_RATE_SIGNAL_LOST     (2)

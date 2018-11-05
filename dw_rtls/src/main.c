@@ -13,20 +13,21 @@
 
 /* Private typedef ----------------------------------------------------------*/
 /* Private define -----------------------------------------------------------*/
-#define LED_STATE_TIMER_RATE           10
 /* Private macro ------------------------------------------------------------*/
 /* Private variables --------------------------------------------------------*/
-static osTimerId LEDTimerHandle;
-static osTimerId DebugTimerHandle;
+static osTimerId TaskTimerHandle;
+static osTimerId StateTimerHandle;
+
+xQueueHandle xQueueUpdate;
 
 __ALIGN_BEGIN USB_OTG_CORE_HANDLE    USB_OTG_dev __ALIGN_END ;
 
 /* Private function prototypes ----------------------------------------------*/
 static void SystemStartThread(void const *p);
-static void MainControlSubThread(void const *p);
-static void LEDStateTimerCallback(void const *p);
-static void DebugSendTimerCallback(void const *p);
-//static void MainControlTimerCallback(void const *p);
+static void MainThread(void const *p);
+static void DataSendThread(void const *p);
+static void TaskTimerCallback(void const *p);
+static void StateTimerCallback(void const *p);
 /* Private functions --------------------------------------------------------*/
 
 /**
@@ -63,47 +64,42 @@ static void SystemStartThread(void const *p)
             &USBD_CDC_cb,
             &USR_cb);
 
-	osTimerDef(0, LEDStateTimerCallback);
-	LEDTimerHandle = osTimerCreate(osTimer(0), osTimerPeriodic, NULL);
-	osTimerStart(LEDTimerHandle, configTICK_RATE_HZ / LED_STATE_TIMER_RATE);
+	osTimerDef(0, TaskTimerCallback);
+	TaskTimerHandle = osTimerCreate(osTimer(0), osTimerPeriodic, NULL);
+	osTimerStart(TaskTimerHandle, configTICK_RATE_HZ / TASK_TIMER_RATE);
 
-	osTimerDef(1, DebugSendTimerCallback);
-	DebugTimerHandle = osTimerCreate(osTimer(1), osTimerPeriodic, NULL);
-	osTimerStart(DebugTimerHandle, configTICK_RATE_HZ / DEBUG_DATA_FRAME_RATE);
+  osTimerDef(1, StateTimerCallback);
+  StateTimerHandle = osTimerCreate(osTimer(1), osTimerPeriodic, NULL);
+  osTimerStart(StateTimerHandle, configTICK_RATE_HZ / STATE_TIMER_RATE);
 
-//	osTimerDef(2, MainControlTimerCallback);
-//	DebugTimerHandle = osTimerCreate(osTimer(2), osTimerPeriodic, NULL);
-//	osTimerStart(DebugTimerHandle, configTICK_RATE_HZ / MAIN_CONTROLLER_LOOP_RATE);
+	osThreadDef(0, MainThread, osPriorityNormal, 0, configMINIMAL_STACK_SIZE * 8);
+	osThreadCreate(osThread(0), NULL);
 
-	osThreadDef(1, MainControlSubThread, osPriorityNormal, 0, configMINIMAL_STACK_SIZE * 8);
+  osThreadDef(1, DataSendThread, osPriorityAboveNormal, 0, configMINIMAL_STACK_SIZE * 2);
 	osThreadCreate(osThread(1), NULL);
 
 	vTaskDelete(NULL);
 	for(;;);
 }
+
+static void TaskTimerCallback(void const *p)
+{
+
+}
+
 uint8_t break_flag = 0;
-static void LEDStateTimerCallback(void const *p)
+uint8_t tim_div = 0;
+static void StateTimerCallback(void const *p)
 {
-	LED1_TOG();
-	if(break_flag)
-		LED2_TOG();
+  if(tim_div % 2 == 0) {
+    LED1_TOG();
+    if(break_flag)
+      LED2_TOG();
+  }
+  tim_div ++;
 }
 
-static void DebugSendTimerCallback(void const *p)
-{
-#if (DEBUG_MODE)
-//	SendDataToMonitor();
-#else
-  HostRespTask(10);
-#endif
-}
-
-//static void MainControlTimerCallback(void const *p)
-//{
-////	SystemControlTask();
-//}
-
-static void MainControlSubThread(void const *p)
+static void MainThread(void const *p)
 {
 	instance_main();
 	break_flag = 1;
@@ -111,8 +107,15 @@ static void MainControlSubThread(void const *p)
 	uint32_t DelayTime = configTICK_RATE_HZ / MAIN_CONTROLLER_LOOP_RATE;
 	for(;;) {
 		osDelayUntil(&PreviousWakeTime, DelayTime);
-//		USB_CDC_SendBuffer((uint8_t *)"Hello.\n", 8);
 	}
+}
+
+static void DataSendThread(void const *p)
+{
+  xQueueUpdate = xQueueCreate(5, sizeof(DistDataRespDef *));
+  for(;;) {
+    HostRespTask();
+  }
 }
 
 #ifdef  USE_FULL_ASSERT
