@@ -26,6 +26,7 @@
 #endif
 
 #include "HostRespTask.h"
+#include "DataMonitor.h"
 
 #include "usbd_cdc_core.h"
 #include "usbd_usr.h"
