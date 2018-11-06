@@ -27,6 +27,8 @@
 #include "deca_regs.h"
 #include "port_platform.h"
 
+#include "DataMonitor.h"
+
 #define APP_NAME "SS TWR INIT v1.3"
 
 /* Inter-ranging delay period, in milliseconds. */
@@ -99,7 +101,8 @@ int ss_init_run(void)
   * set by dwt_setrxaftertxdelay() has elapsed. */
   dwt_starttx(DWT_START_TX_IMMEDIATE | DWT_RESPONSE_EXPECTED);
   tx_count++;
-  printf("Transmission # : %d\r\n",tx_count);
+//  printf("Transmission # : %d\r\n",tx_count);
+  MonitorUpdateDataPos(tx_count, 1);
 
 
   /* We assume that the transmission is achieved correctly, poll for reception of a frame or error/timeout. See NOTE 4 below. */
@@ -140,7 +143,8 @@ int ss_init_run(void)
     if (memcmp(rx_buffer, rx_resp_msg, ALL_MSG_COMMON_LEN) == 0)
     {	
       rx_count++;
-      printf("Reception # : %d\r\n",rx_count);
+//      printf("Reception # : %d\r\n",rx_count);
+      MonitorUpdateDataPos(rx_count, 2);
       uint32 poll_tx_ts, resp_rx_ts, poll_rx_ts, resp_tx_ts;
       int32 rtd_init, rtd_resp;
       float clockOffsetRatio ;
@@ -162,7 +166,8 @@ int ss_init_run(void)
 
       tof = ((rtd_init - rtd_resp * (1.0f - clockOffsetRatio)) / 2.0f) * DWT_TIME_UNITS; // Specifying 1.0f and 2.0f are floats to clear warning 
       distance = tof * SPEED_OF_LIGHT;
-      printf("Distance : %f\r\n",distance);
+//      printf("Distance : %f\r\n",distance);
+      MonitorUpdateDataPos(distance, 0);
     }
   }
   else
