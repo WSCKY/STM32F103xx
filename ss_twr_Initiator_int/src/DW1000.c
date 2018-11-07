@@ -334,15 +334,15 @@ static void GPIO_Configuration(void)
 
 void _DW_IRQn_GPIO_EXTI_IRQHandler(void)
 {
-//	process_deca_irq();
+  if(pIRQnCallback != 0) {
+    pIRQnCallback();
+  }
 	EXTI_ClearITPendingBit(_DW_IRQn_GPIO_EXTI_LINE);
 }
 
 void _DW_RSTn_GPIO_EXTI_IRQHandler(void)
 {
-  if(pIRQnCallback != 0) {
-    pIRQnCallback();
-  }
+
 	EXTI_ClearITPendingBit(_DW_RSTn_GPIO_EXTI_LINE);
 }
 
