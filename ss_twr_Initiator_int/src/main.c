@@ -10,6 +10,7 @@
 
 /* Includes -----------------------------------------------------------------*/
 #include "main.h"
+#include "ss_init_main.h"
 
 /* Private typedef ----------------------------------------------------------*/
 /* Private define -----------------------------------------------------------*/
@@ -56,7 +57,6 @@ static dwt_config_t config = {
 #ifdef USE_FREERTOS
 
 TaskHandle_t  ss_initiator_task_handle;   /**< Reference to SS TWR Initiator FreeRTOS task. */
-extern void ss_initiator_task_function (void * pvParameter);
 TaskHandle_t  led_toggle_task_handle;   /**< Reference to LED0 toggling FreeRTOS task. */
 TaskHandle_t  send_data_task_handle;    /**< Reference to data sending FreeRTOS task. */
 TimerHandle_t led_toggle_timer_handle;  /**< Reference to LED1 toggling FreeRTOS timer. */
@@ -175,6 +175,13 @@ int main(void)
 
   /* Configure DW1000. */
   dwt_configure(&config);
+
+  /* Initialization of the DW1000 interrupt*/
+  /* Callback are defined in ss_init_main.c */
+  dwt_setcallbacks(&tx_conf_cb, &rx_ok_cb, &rx_to_cb, &rx_err_cb);
+
+  /* Enable wanted interrupts (TX confirmation, RX good frames, RX timeouts and RX errors). */
+  dwt_setinterrupt(DWT_INT_TFRS | DWT_INT_RFCG | DWT_INT_RFTO | DWT_INT_RXPTO | DWT_INT_RPHE | DWT_INT_RFCE | DWT_INT_RFSL | DWT_INT_SFDT, 1);
 
   /* Apply default antenna delay value. See NOTE 2 below. */
   dwt_setrxantennadelay(RX_ANT_DLY);
