@@ -1,0 +1,10 @@
+*.uvguix.*
+*.uvoptx
+*.uvprojx
+Objects/
+DebugConfig/
+*.scvd
+*.txt
+RTE/
+*.ini
+
