@@ -53,10 +53,13 @@
 #define DW1000_SPI_HIGH                SPI_BaudRatePrescaler_4
 #define DW1000_SPI_LOW                 SPI_BaudRatePrescaler_16
 
+typedef void (*_DW1000_IRQnCallback)(void);
+
 void DW1000_If_Init(void);
 void DW1000RSTn_NOP_IN(void);
 void DW1000RSTn_DrvLow(void);
 void SPI_ConfigFastRate(uint32_t scalingfactor);
+void DW1000_SetIRQnHandler(_DW1000_IRQnCallback pf);
 int DW1000_SPI_Read(uint16_t headerLength, const uint8_t *headerBuffer, uint32_t readlength, uint8_t *readBuffer);
 int DW1000_SPI_Write(uint16_t headerLength, const uint8_t *headerBuffer, uint32_t bodylength, const uint8_t *bodyBuffer);
 

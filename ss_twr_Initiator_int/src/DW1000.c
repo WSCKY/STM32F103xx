@@ -4,6 +4,8 @@ static uint8_t _rx_comp_flag = 1;
 static uint8_t _tx_comp_flag = 1;
 static DMA_InitTypeDef DMA_InitStructure;
 
+static _DW1000_IRQnCallback pIRQnCallback = 0;
+
 static void SPI_Configuration(void);
 static void DMA_Configuration(void);
 static void RCC_Configuration(void);
@@ -97,6 +99,12 @@ int DW1000_SPI_Write(uint16_t headerLength, const uint8_t *headerBuffer, uint32_
 	_DW_SPI_CS_DISABLE();
 //	decamutexoff(stat);
 	return 0;
+}
+
+void DW1000_SetIRQnHandler(_DW1000_IRQnCallback pf)
+{
+  if(pf != 0)
+    pIRQnCallback = pf;
 }
 
 //void setup_DW1000RSTnIRQ(int enable)
@@ -332,7 +340,9 @@ void _DW_IRQn_GPIO_EXTI_IRQHandler(void)
 
 void _DW_RSTn_GPIO_EXTI_IRQHandler(void)
 {
-//	process_dwRSTn_irq();
+  if(pIRQnCallback != 0) {
+    pIRQnCallback();
+  }
 	EXTI_ClearITPendingBit(_DW_RSTn_GPIO_EXTI_LINE);
 }
 
