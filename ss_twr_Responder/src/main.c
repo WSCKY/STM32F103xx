@@ -15,19 +15,10 @@
 /* Private define -----------------------------------------------------------*/
 /* Private macro ------------------------------------------------------------*/
 /* Private variables --------------------------------------------------------*/
-//static osTimerId TaskTimerHandle;
-//static osTimerId StateTimerHandle;
-
-//SemaphoreHandle_t xSemaphoreUpdate = NULL;
-
 __ALIGN_BEGIN USB_OTG_CORE_HANDLE    USB_OTG_dev __ALIGN_END ;
 
 /* Private function prototypes ----------------------------------------------*/
-//static void SystemStartThread(void const *p);
-//static void MainThread(void const *p);
 //static void DataSendThread(void const *p);
-//static void TaskTimerCallback(void const *p);
-//static void StateTimerCallback(void const *p);
 /* Private functions --------------------------------------------------------*/
 
 //-----------------dw1000----------------------------
@@ -71,7 +62,6 @@ static void led_toggle_task_function (void * pvParameter)
   UNUSED_PARAMETER(pvParameter);
   while (true)
   {
-//    LEDS_INVERT(BSP_LED_0_MASK);
     LED1_TOG();
     /* Delay a task for a given number of ticks */
     vTaskDelay(TASK_DELAY);
@@ -86,7 +76,6 @@ static void led_toggle_task_function (void * pvParameter)
 static void led_toggle_timer_callback (void * pvParameter)
 {
   UNUSED_PARAMETER(pvParameter);
-//  LEDS_INVERT(BSP_LED_1_MASK);
   LED2_TOG();
 }
 #else
@@ -119,9 +108,6 @@ int main(void)
             &USBD_CDC_cb,
             &USR_cb);
 
-//  xSemaphoreUpdate = xSemaphoreCreateBinary();
-//  if(xSemaphoreUpdate == NULL) for(;;);
-
   #ifdef USE_FREERTOS
     /* Create task for LED0 blinking with priority set to 2 */
     UNUSED_VARIABLE(xTaskCreate(led_toggle_task_function, "LED0", configMINIMAL_STACK_SIZE + 200, NULL, 2, &led_toggle_task_handle));
@@ -138,8 +124,7 @@ int main(void)
 
   /* Setup DW1000 IRQ pin */  
   DW1000RSTn_NOP_IN();
-//  nrf_gpio_cfg_input(DW1000_IRQ, NRF_GPIO_PIN_NOPULL); 		//irq
-  
+
   /* Reset DW1000 */
   reset_DW1000(); 
 
@@ -186,64 +171,7 @@ int main(void)
       ss_resp_run();
     }
     #endif  // #ifdef USE_FREERTOS
-
-//	osThreadDef(0, SystemStartThread, osPriorityNormal, 0, configMINIMAL_STACK_SIZE);
-//	osThreadCreate(osThread(0), NULL);
-
-//	/* Start scheduler */
-//  osKernelStart();
-
-//	/* Infinite loop */
-//	for(;;);
 }
-
-//static void SystemStartThread(void const *p)
-//{
-//	osTimerDef(0, TaskTimerCallback);
-//	TaskTimerHandle = osTimerCreate(osTimer(0), osTimerPeriodic, NULL);
-//	osTimerStart(TaskTimerHandle, configTICK_RATE_HZ / TASK_TIMER_RATE);
-
-//  osTimerDef(1, StateTimerCallback);
-//  StateTimerHandle = osTimerCreate(osTimer(1), osTimerPeriodic, NULL);
-//  osTimerStart(StateTimerHandle, configTICK_RATE_HZ / STATE_TIMER_RATE);
-
-//	osThreadDef(0, MainThread, osPriorityNormal, 0, configMINIMAL_STACK_SIZE * 8);
-//	osThreadCreate(osThread(0), NULL);
-
-//  osThreadDef(1, DataSendThread, osPriorityAboveNormal, 0, configMINIMAL_STACK_SIZE * 2);
-//	osThreadCreate(osThread(1), NULL);
-
-//	vTaskDelete(NULL);
-//	for(;;);
-//}
-
-//static void TaskTimerCallback(void const *p)
-//{
-
-//}
-
-//uint8_t break_flag = 0;
-//uint8_t tim_div = 0;
-//static void StateTimerCallback(void const *p)
-//{
-//  if(tim_div % 2 == 0) {
-//    LED1_TOG();
-//    if(break_flag)
-//      LED2_TOG();
-//  }
-//  tim_div ++;
-//}
-
-//static void MainThread(void const *p)
-//{
-//	instance_main();
-//	break_flag = 1;
-//	uint32_t PreviousWakeTime = osKernelSysTick();
-//	uint32_t DelayTime = configTICK_RATE_HZ / MAIN_CONTROLLER_LOOP_RATE;
-//	for(;;) {
-//		osDelayUntil(&PreviousWakeTime, DelayTime);
-//	}
-//}
 
 //static void DataSendThread(void const *p)
 //{
@@ -293,5 +221,3 @@ void assert_failed(uint8_t* file, uint32_t line)
  *     DW1000 API Guide for more details on the DW1000 driver functions.
  *
  ****************************************************************************************************************************************************/
-
-/******************************** END OF FILE ********************************/

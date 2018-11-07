@@ -314,4 +314,3 @@ void ss_responder_task_function (void * pvParameter)
 *    DW1000 API Guide for more details on the DW1000 driver functions.
 *
 ****************************************************************************************************************************************************/
- 
