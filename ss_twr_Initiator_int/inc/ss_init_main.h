@@ -15,7 +15,7 @@
 /* Declaration of static functions. */
 static void resp_msg_get_ts(uint8 *ts_field, uint32 *ts);
 
-int ss_init_run(void);
+void ss_init_run(void);
 
 void rx_ok_cb(const dwt_cb_data_t *cb_data);
 
