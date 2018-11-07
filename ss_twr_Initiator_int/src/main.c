@@ -153,13 +153,15 @@ int main(void)
   /* Setup DW1000 IRQ pin */  
   DW1000RSTn_NOP_IN();
 
+  DW1000_SetIRQnHandler(dwt_isr);
+
   printf("  Singled Sided Two Way Ranging Initiator Example \r\n");
   
   /* Reset DW1000 */
   reset_DW1000(); 
 
   /* Set SPI clock to 2MHz */
-  port_set_dw1000_slowrate();			
+  port_set_dw1000_slowrate();
   
   /* Init the DW1000 */
   if (dwt_initialise(DWT_LOADUCODE) == DWT_ERROR)
