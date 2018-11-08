@@ -103,7 +103,7 @@ static void final_msg_get_ts(const uint8 *ts_field, uint32 *ts);
  */
 void ds_resp_run(void)
 {
-  uint32_t sTime = 0;
+  uint32_t sTime = 0, eTime = 0;
   /* Clear reception timeout to start next ranging process. */
   dwt_setrxtimeout(0);
 
@@ -113,11 +113,11 @@ void ds_resp_run(void)
   /* Poll for reception of a frame or error/timeout. See NOTE 8 below. */
   while (!((status_reg = dwt_read32bitreg(SYS_STATUS_ID)) & (SYS_STATUS_RXFCG | SYS_STATUS_ALL_RX_TO | SYS_STATUS_ALL_RX_ERR)))
   { };
-  sTime = _Get_Micros();
+
   if (status_reg & SYS_STATUS_RXFCG)
   {
       uint32 frame_len;
-
+  sTime = _Get_Micros();
       /* Clear good RX frame event in the DW1000 status register. */
       dwt_write32bitreg(SYS_STATUS_ID, SYS_STATUS_RXFCG);
 
@@ -162,7 +162,7 @@ void ds_resp_run(void)
           /* Poll for reception of expected "final" frame or error/timeout. See NOTE 8 below. */
           while (!((status_reg = dwt_read32bitreg(SYS_STATUS_ID)) & (SYS_STATUS_RXFCG | SYS_STATUS_ALL_RX_TO | SYS_STATUS_ALL_RX_ERR)))
           { };
-
+eTime = _Get_Micros();
           /* Increment frame sequence number after transmission of the response message (modulo 256). */
           frame_seq_nb++;
 
@@ -211,6 +211,9 @@ void ds_resp_run(void)
                   distance = tof * SPEED_OF_LIGHT;
 MonitorUpdateDataPos(_Get_Micros() - sTime, 1);
 MonitorUpdateDataPos((Rb+Db+tof_dtu) * DWT_TIME_UNITS * 1.0e6, 2);
+MonitorUpdateDataPos((Db+tof_dtu) * DWT_TIME_UNITS * 1.0e6, 3);
+MonitorUpdateDataPos((tof_dtu) * DWT_TIME_UNITS * 1.0e6, 4);
+MonitorUpdateDataPos(eTime - sTime, 5);
 MonitorUpdateDataPos(distance, 0);
               }
           }
