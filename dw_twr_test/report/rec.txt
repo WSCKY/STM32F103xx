@@ -1,0 +1,11 @@
+TX timings(Average)
+
+Mode: 6.81Mbps/128PSR, Channel5
+20bytes: 210us
+40bytes: 227us
+60bytes: 263us
+
+Mode: 110Kbps/1024PSR, Channel2
+20bytes: 3015us
+40bytes: 4330us
+60bytes: 6035us
