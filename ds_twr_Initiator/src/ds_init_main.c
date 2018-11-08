@@ -98,6 +98,7 @@ static void final_msg_set_ts(uint8 *ts_field, uint64 ts);
  */
 void ds_init_run(void)
 {
+//  uint32_t sTime = 0, eTime = 0;
   /* Write frame data to DW1000 and prepare transmission. See NOTE 8 below. */
   tx_poll_msg[ALL_MSG_SN_IDX] = frame_seq_nb;
   dwt_writetxdata(sizeof(tx_poll_msg), tx_poll_msg, 0); /* Zero offset in TX buffer. */
@@ -107,6 +108,11 @@ void ds_init_run(void)
    * set by dwt_setrxaftertxdelay() has elapsed. */
   dwt_starttx(DWT_START_TX_IMMEDIATE | DWT_RESPONSE_EXPECTED);
 
+//sTime = _Get_Micros();
+//  while (!(dwt_read32bitreg(SYS_STATUS_ID) & SYS_STATUS_TXFRS))
+//              { };
+// eTime = _Get_Micros();
+//  MonitorUpdateDataPos(eTime - sTime, 1);
   /* We assume that the transmission is achieved correctly, poll for reception of a frame or error/timeout. See NOTE 9 below. */
   while (!((status_reg = dwt_read32bitreg(SYS_STATUS_ID)) & (SYS_STATUS_RXFCG | SYS_STATUS_ALL_RX_TO | SYS_STATUS_ALL_RX_ERR)))
   { };
