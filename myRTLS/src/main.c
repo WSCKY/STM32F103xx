@@ -121,7 +121,7 @@ static void led_toggle_timer_callback (void * pvParameter)
 #endif   // #ifdef USE_FREERTOS
 
 /*****************************************************************************/
-extern void tt_func(void);
+
 /**
   * @brief  Main program.
   * @param  None
@@ -132,7 +132,7 @@ int main(void)
 	SystemCoreClockUpdate();
 	SysTick_Config(SystemCoreClock / 1000);
 	NVIC_PriorityGroupConfig(NVIC_PriorityGroup_2);
-tt_func();
+
 	LED_Init();
   /*Initialization UART*/
 	LOGPortInit();
