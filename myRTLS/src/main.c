@@ -49,15 +49,8 @@ static dwt_config_t config = {
 //    (1025 + 64 - 32) /* SFD timeout (preamble length + 1 + SFD length - PAC size). Used in RX only. */
 //};
 
-/* Preamble timeout, in multiple of PAC size. See NOTE 3 below. */
-#define PRE_TIMEOUT 1000
-
-/* Delay between frames, in UWB microseconds. See NOTE 1 below. */
-#define POLL_TX_TO_RESP_RX_DLY_UUS 100 
-
-/*Should be accurately calculated during calibration*/
-#define TX_ANT_DLY 16300
-#define RX_ANT_DLY 16456	
+///* Preamble timeout, in multiple of PAC size. See NOTE 3 below. */
+//#define PRE_TIMEOUT 1000
 
 //--------------dw1000---end---------------
 
@@ -67,8 +60,7 @@ static dwt_config_t config = {
 
 #ifdef USE_FREERTOS
 
-TaskHandle_t  ss_initiator_task_handle;   /**< Reference to SS TWR Initiator FreeRTOS task. */
-extern void ss_initiator_task_function (void * pvParameter);
+TaskHandle_t  rtls_task_handle;         /**< Reference to SS TWR Initiator FreeRTOS task. */
 TaskHandle_t  led_toggle_task_handle;   /**< Reference to LED0 toggling FreeRTOS task. */
 TaskHandle_t  send_data_task_handle;    /**< Reference to data sending FreeRTOS task. */
 TimerHandle_t led_toggle_timer_handle;  /**< Reference to LED1 toggling FreeRTOS timer. */
@@ -155,9 +147,13 @@ int main(void)
     /* Start timer for LED1 blinking */
     led_toggle_timer_handle = xTimerCreate( "LED1", TIMER_PERIOD, pdTRUE, NULL, led_toggle_timer_callback);
     UNUSED_VARIABLE(xTimerStart(led_toggle_timer_handle, 0));
-
-    /* Create task for SS TWR Initiator set to 2 */
-    UNUSED_VARIABLE(xTaskCreate(ss_initiator_task_function, "SSTWR_INIT", configMINIMAL_STACK_SIZE + 200, NULL, 2, &ss_initiator_task_handle));
+#if (INSTANCE_MODE_TAG)
+    /* Create task for RTLS set to 2 */
+    UNUSED_VARIABLE(xTaskCreate(tag_rtls_task_function, "RTLS", configMINIMAL_STACK_SIZE + 200, NULL, 2, &rtls_task_handle));
+#else
+    /* Create task for RTLS set to 2 */
+    UNUSED_VARIABLE(xTaskCreate(anc_rtls_task_function, "RTLS", configMINIMAL_STACK_SIZE + 200, NULL, 2, &rtls_task_handle));
+#endif /* (INSTANCE_MODE_TAG) */
   #endif // #ifdef USE_FREERTOS
 
   //-------------dw1000  ini------------------------------------	
@@ -192,11 +188,6 @@ int main(void)
 
   /* Set preamble timeout for expected frames. See NOTE 3 below. */
   //dwt_setpreambledetecttimeout(0); // PRE_TIMEOUT
-          
-  /* Set expected response's delay and timeout. 
-  * As this example only handles one incoming frame with always the same delay and timeout, those values can be set here once for all. */
-  dwt_setrxaftertxdelay(POLL_TX_TO_RESP_RX_DLY_UUS);
-  dwt_setrxtimeout(65000); // Maximum value timeout with DW1000 is 65ms  
 
   //-------------dw1000  ini------end---------------------------	
   // IF WE GET HERE THEN THE LEDS WILL BLINK

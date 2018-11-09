@@ -25,6 +25,9 @@
 
 #endif
 
+#include "TagMain.h"
+#include "AncMain.h"
+
 #include "HostRespTask.h"
 #include "DataMonitor.h"
 
