@@ -16,7 +16,7 @@
   #endif /* __CC_ARM */
 #endif
 
-#define FRAME_MAX_LENGTH               (40)
+#define FRAME_MAX_LENGTH               (20)
 
 #define DEFAULT_STX                    (0x5A)
 
@@ -26,31 +26,60 @@ typedef enum {
   final_msg = 0x3
 } FrameTypeDef;
 
+/*
+the tag sends (broadcasts) a single Poll message received by all anchors
+*/
 __packed typedef struct {
-  uint8_t TagAddr;
-} PollMsgDataDef;
+  uint8_t SrcAddr;
+} PollMsgDataDef; /* send by tag */
 
 __packed typedef struct {
-  uint8_t TagAddr;
-  uint8_t AncAddr;
-  FloatUnion Distance;
-} RespMsgDataDef;
+  uint8_t DstAddr;
+  uint8_t SrcAddr;
+/*
+in order to gather the TOF data for solving, and rather than employing any backhaul infrastructure, 
+each anchor sends the TOF that it calculates for a tag, back to the tag in the next Response message to that tag. 
+So, as each tag periodically ranges to the anchors, it gets the results from one period during the very next period.
+*/
+  FloatUnion Distance; /* calculated time-of-flight */
+} RespMsgDataDef; /* send by anchor */
 
+/*
+In the Final message payload, the tag sends the actual transmission time of the Final message itself, 
+along with the send time of the Poll and the times at which it received the responses from each of the anchors.
+*/
 __packed typedef struct {
-  uint8_t TagAddr;
-  uint64_t x;
-} FinalMsgDataDef;
+  uint8_t DstAddr;
+  uint8_t SrcAddr;
+  uint32_t tRspRX2PolTX;
+  uint32_t tFinTX2RspRX;
+} FinalMsgDataDef; /* send by tag */
+/*
+Each anchor receiving the Final message then has sufficient information to calculate the time-of-flight (TOF) between itself and the tag, 
+(assuming that the anchor correctly received the Poll and that the tag correctly received the anchor's Response).
+*/
+
+__packed typedef union {
+  PollMsgDataDef PollMsg;
+  RespMsgDataDef RespMsg;
+  FinalMsgDataDef FinalMsg;
+} MsgDataDef;
 
 __packed typedef struct {
   uint8_t stx;
   uint8_t SepNbr;
   FrameTypeDef fType;
+  MsgDataDef Msg;
   uint16_t CRC16;
 } FrameDataDef;
 
-typedef union {
+__packed typedef union {
   FrameDataDef Frame;
   uint8_t uData[FRAME_MAX_LENGTH];
 } FrameDataUnion;
+
+#define POLL_MSG_LENGTH                (6)
+#define RESP_MSG_LENGTH                (11)
+#define FINAL_MSG_LENGTH               (15)
 
 #endif /* __FRAMESTRUCT_H */
