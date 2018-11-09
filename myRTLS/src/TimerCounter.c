@@ -16,6 +16,7 @@
 /* Private macro -------------------------------------------------------------*/
 /* Private variables ---------------------------------------------------------*/
 static uint32_t OverFlowCnt = 0;
+static uint32_t TimeMeasure = 0;
 /* Private function prototypes -----------------------------------------------*/
 /* Private functions ---------------------------------------------------------*/
 
@@ -113,6 +114,16 @@ void _delay_ms(uint32_t ms)
 	do {
 		_cur = _Get_Millis();
 	} while((_cur - _start) < _ms);
+}
+
+void _MeasureTimeStart(void)
+{
+  TimeMeasure = _Get_Micros();
+}
+
+uint32_t _GetTimeMeasured(void)
+{
+  return (_Get_Micros() - TimeMeasure);
 }
 
 /**
