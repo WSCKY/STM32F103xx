@@ -1,6 +1,7 @@
 #ifndef __FRAMESTRUCT_H
 #define __FRAMESTRUCT_H
 
+#include "RTLS_Conf.h"
 #include "PlatformConfig.h"
 
 #ifndef __packed
@@ -16,7 +17,7 @@
   #endif /* __CC_ARM */
 #endif
 
-#define FRAME_MAX_LENGTH               (20)
+#define FRAME_MAX_LENGTH               (12 + SUPPORT_MAX_ANCHORS * 9)
 
 #define DEFAULT_STX                    (0x5A)
 
@@ -49,10 +50,13 @@ In the Final message payload, the tag sends the actual transmission time of the 
 along with the send time of the Poll and the times at which it received the responses from each of the anchors.
 */
 __packed typedef struct {
-  uint8_t DstAddr;
   uint8_t SrcAddr;
-  uint32_t tRspRX2PolTX;
-  uint32_t tFinTX2RspRX;
+  uint8_t TS_Number;
+  __packed struct {
+    uint8_t DstAddr;
+    uint32_t tRspRX2PolTX;
+    uint32_t tFinTX2RspRX;
+  } FinalTS[SUPPORT_MAX_ANCHORS];
 } FinalMsgDataDef; /* send by tag */
 /*
 Each anchor receiving the Final message then has sufficient information to calculate the time-of-flight (TOF) between itself and the tag, 
@@ -80,6 +84,6 @@ __packed typedef union {
 
 #define POLL_MSG_LENGTH                (6)
 #define RESP_MSG_LENGTH                (11)
-#define FINAL_MSG_LENGTH               (15)
+#define FINAL_MSG_LENGTH               (7  + SUPPORT_MAX_ANCHORS * 9)
 
 #endif /* __FRAMESTRUCT_H */
