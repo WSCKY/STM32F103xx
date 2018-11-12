@@ -78,7 +78,7 @@ static void anc_rtls_run(void)
       if(dwt_starttx(DWT_START_TX_DELAYED | DWT_RESPONSE_EXPECTED) != DWT_SUCCESS) {
         return;
       }
-      
+
       /* Poll for reception of expected "final" frame or error/timeout. See NOTE 8 below. */
       while (!((status_reg = dwt_read32bitreg(SYS_STATUS_ID)) & (SYS_STATUS_RXFCG | SYS_STATUS_ALL_RX_TO | SYS_STATUS_ALL_RX_ERR)))
       { };
@@ -97,17 +97,25 @@ static void anc_rtls_run(void)
         }
         /* Check that the frame is a final message sent by Tag. */
         if(_frameRX.Frame.stx == DEFAULT_STX && _frameRX.Frame.fType == final_msg) {
-          double Ra, Rb, Da, Db;
+          uint8_t index = 0;
+          for(index = 0; index < _frameRX.Frame.Msg.FinalMsg.TS_Number; index ++) {
+            if(AncId == _frameRX.Frame.Msg.FinalMsg.FinalTS[index].DstAddr) { /* check if belongs to me. */
+              break;
+            }
+          }
+          if(index < _frameRX.Frame.Msg.FinalMsg.TS_Number) {
+            double Ra, Rb, Da, Db;
 
-          /* Retrieve response transmission and final reception timestamps. */
-          resp_tx_ts = get_tx_timestamp_u64();
-          final_rx_ts = get_rx_timestamp_u64();
-          
-          Ra = (double)_frameRX.Frame.Msg.FinalMsg.FinalTS[0].tRspRX2PolTX;
-          Rb = (double)((uint32_t)final_rx_ts - (uint32_t)resp_tx_ts);
-          Da = (double)_frameRX.Frame.Msg.FinalMsg.FinalTS[0].tFinTX2RspRX;
-          Db = (double)((uint32_t)resp_tx_ts - (uint32_t)poll_rx_ts);
-          _report_dist = (int64_t)((Ra * Rb - Da * Db) / (Ra + Rb + Da + Db)) * DWT_TIME_UNITS * SPEED_OF_LIGHT;
+            /* Retrieve response transmission and final reception timestamps. */
+            resp_tx_ts = get_tx_timestamp_u64();
+            final_rx_ts = get_rx_timestamp_u64();
+
+            Ra = (double)_frameRX.Frame.Msg.FinalMsg.FinalTS[0].tRspRX2PolTX;
+            Rb = (double)((uint32_t)final_rx_ts - (uint32_t)resp_tx_ts);
+            Da = (double)_frameRX.Frame.Msg.FinalMsg.FinalTS[0].tFinTX2RspRX;
+            Db = (double)((uint32_t)resp_tx_ts - (uint32_t)poll_rx_ts);
+            _report_dist = (int64_t)((Ra * Rb - Da * Db) / (Ra + Rb + Da + Db)) * DWT_TIME_UNITS * SPEED_OF_LIGHT;
+          }
         }
       } else {
         /* Clear RX error/timeout events in the DW1000 status register. */
