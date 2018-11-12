@@ -1,6 +1,9 @@
 #include "TagMain.h"
 
 #if (INSTANCE_MODE_TAG)
+struct { uint8_t srcAddr; float dist; uint64_t rx_ts; } resp_save[SUPPORT_MAX_ANCHORS] = {0};
+uint8_t resp_recv_cnt = 0;
+
 /* tag id */
 static uint8_t TagId = 0 | 0x80;
 /* alloc static memory to store the RX frame data. */
@@ -11,18 +14,17 @@ static FrameDataUnion _frameTX = {0};
 static uint8_t frame_seq_nb = 0;
 /* Hold copy of status register state here for reference so that it can be examined at a debug breakpoint. */
 static uint32_t status_reg = 0;
-/* distance report by anchor */
-static float _report_dist = 0;
 
 /* Time-stamps of frames transmission/reception, expressed in device time units.
  * As they are 40-bit wide, we need to define a 64-bit int type to handle them. */
 static uint64_t poll_tx_ts;
-static uint64_t resp_rx_ts;
+//static uint64_t resp_rx_ts[SUPPORT_MAX_ANCHORS];
 static uint64_t final_tx_ts;
 
 /* Declaration of static functions. */
 static uint64_t get_tx_timestamp_u64(void);
 static uint64_t get_rx_timestamp_u64(void);
+static uint64_t get_sys_timestamp_u64(void);
 
 static void rtls_init(void)
 {
@@ -31,82 +33,159 @@ static void rtls_init(void)
   _frameTX.Frame.SepNbr = frame_seq_nb;
 }
 
+/**
+  * @brief  send poll message loop.(65ms + 50ms = 115ms)
+  * @param  None
+  * @retval None
+  */
+static void poll_send_loop(void)
+{
+  /* Set expected response's delay and timeout. 
+   * As this example only handles one incoming frame with always the same delay and timeout, those values can be set here once for all. */
+  dwt_setrxaftertxdelay(POLL_TX_TO_RESP_RX_DLY_UUS);
+  dwt_setrxtimeout(65000); // Maximum value timeout with DW1000 is 65ms
+  _frameTX.Frame.fType = poll_msg;
+  _frameTX.Frame.Msg.PollMsg.SrcAddr = TagId;
+
+  resp_recv_cnt = 0; /* reset resp msg recv counter. */
+
+  while(1) {
+    _frameTX.Frame.SepNbr = frame_seq_nb;
+    /* Write frame data to DW1000 and prepare transmission. See NOTE 8 below. */
+    dwt_writetxdata(POLL_MSG_LENGTH, _frameTX.uData, 0); /* Zero offset in TX buffer. */
+    dwt_writetxfctrl(POLL_MSG_LENGTH, 0, 1); /* Zero offset in TX buffer, ranging. */
+
+    /* Start transmission, indicating that a response is expected so that reception is enabled automatically after the frame is sent and the delay
+     * set by dwt_setrxaftertxdelay() has elapsed. */
+    dwt_starttx(DWT_START_TX_IMMEDIATE | DWT_RESPONSE_EXPECTED);
+
+    /* We assume that the transmission is achieved correctly, poll for reception of a frame or error/timeout. See NOTE 9 below. */
+    while (!((status_reg = dwt_read32bitreg(SYS_STATUS_ID)) & (SYS_STATUS_RXFCG | SYS_STATUS_ALL_RX_TO | SYS_STATUS_ALL_RX_ERR)))
+    { };
+
+    /* Increment frame sequence number after transmission of the poll message (modulo 256). */
+    frame_seq_nb ++;
+
+    if (status_reg & SYS_STATUS_RXFCG) {
+      /* Retrieve poll transmission timestamp. */
+      poll_tx_ts = get_tx_timestamp_u64();
+      dwt_setrxtimeout(5000); /* every anchors has 5ms to send resp msg. */
+      break;
+    } else {
+      /* Clear RX error/timeout events in the DW1000 status register. */
+      dwt_write32bitreg(SYS_STATUS_ID, SYS_STATUS_ALL_RX_TO | SYS_STATUS_ALL_RX_ERR);
+      /* Reset RX to properly reinitialise LDE operation. */
+      dwt_rxreset();
+
+      /* Delay a task for a given number of ticks */
+      vTaskDelay(50);
+    }
+  }
+}
+
+static void resp_process(FrameDataUnion *pFrameRX, FrameDataUnion *pFrameTX)
+{
+  uint32_t frame_len;
+  uint8_t recv_cnt = SUPPORT_MAX_ANCHORS; /* how many times to receive. */
+  do {
+    if (status_reg & SYS_STATUS_RXFCG) {
+      /* Clear good RX frame event and TX frame sent in the DW1000 status register. */
+      dwt_write32bitreg(SYS_STATUS_ID, SYS_STATUS_RXFCG | SYS_STATUS_TXFRS);
+
+      /* A frame has been received, read it into the local buffer. */
+      frame_len = dwt_read32bitreg(RX_FINFO_ID) & RX_FINFO_RXFLEN_MASK;
+      if (frame_len <= FRAME_MAX_LENGTH) {
+        dwt_readrxdata(pFrameRX->uData, frame_len, 0);
+
+        /* Check that the frame is the expected response from the anchor. */
+        if(pFrameRX->Frame.stx == DEFAULT_STX && pFrameRX->Frame.fType == resp_msg) {
+          if(pFrameRX->Frame.Msg.RespMsg.DstAddr == TagId) { //it's send to me.
+            if(resp_recv_cnt < SUPPORT_MAX_ANCHORS) {
+              for(uint8_t i = 0; i < resp_recv_cnt; i ++) {
+                if(resp_save[resp_recv_cnt].srcAddr == pFrameRX->Frame.Msg.RespMsg.SrcAddr) {
+                  goto processed;
+                }
+              }
+              resp_save[resp_recv_cnt].srcAddr = pFrameRX->Frame.Msg.RespMsg.SrcAddr; /* who report it. */
+              resp_save[resp_recv_cnt].dist = pFrameRX->Frame.Msg.RespMsg.Distance.fData;
+              resp_save[resp_recv_cnt].rx_ts = get_rx_timestamp_u64(); /* Retrieve response reception timestamp. */
+
+              pFrameTX->Frame.Msg.FinalMsg.TS_Number = resp_recv_cnt + 1;
+              pFrameTX->Frame.Msg.FinalMsg.FinalTS[resp_recv_cnt].DstAddr = pFrameRX->Frame.Msg.RespMsg.SrcAddr;
+              pFrameTX->Frame.Msg.FinalMsg.FinalTS[resp_recv_cnt].tRspRX2PolTX = resp_save[resp_recv_cnt].rx_ts - poll_tx_ts;
+              resp_recv_cnt ++;
+            } else {
+              break;
+            }
+          }
+        }
+      }
+    } else {
+      /* Clear RX error/timeout events in the DW1000 status register. */
+      dwt_write32bitreg(SYS_STATUS_ID, SYS_STATUS_ALL_RX_TO | SYS_STATUS_ALL_RX_ERR);
+      /* Reset RX to properly reinitialise LDE operation. */
+      dwt_rxreset();
+      break;
+    }
+processed:
+    recv_cnt --;
+    if(recv_cnt) {
+      /* Activate reception immediately. */
+      dwt_rxenable(DWT_START_RX_IMMEDIATE);
+
+      /* Poll for reception of a frame or error/timeout. See NOTE 8 below. */
+      while (!((status_reg = dwt_read32bitreg(SYS_STATUS_ID)) & (SYS_STATUS_RXFCG | SYS_STATUS_ALL_RX_TO | SYS_STATUS_ALL_RX_ERR)))
+      { };
+    }
+  } while(recv_cnt);
+}
+
+static void final_send(FrameDataUnion *pFrameTX)
+{
+  uint32_t final_tx_time;
+  /* Compute final message transmission time. See NOTE 10 below. */
+  final_tx_time = (get_sys_timestamp_u64() + (RESP_RX_TO_FINAL_TX_DLY_UUS * UUS_TO_DWT_TIME)) >> 8;
+  dwt_setdelayedtrxtime(final_tx_time);
+
+  /* Final TX timestamp is the transmission time we programmed plus the TX antenna delay. */
+  final_tx_ts = (((uint64)(final_tx_time & 0xFFFFFFFEUL)) << 8) + TX_ANT_DLY;
+
+  pFrameTX->Frame.SepNbr = frame_seq_nb;
+  pFrameTX->Frame.fType = final_msg;
+  pFrameTX->Frame.Msg.FinalMsg.SrcAddr = TagId;
+//  for(uint8_t i = 0; i < resp_recv_cnt; i ++) {
+//    for(uint8_t j = 0; j < resp_recv_cnt; j ++) {
+//      if(pFrameTX->Frame.Msg.FinalMsg.FinalTS[i].DstAddr == resp_save[j].srcAddr) {
+//        pFrameTX->Frame.Msg.FinalMsg.FinalTS[i].tFinTX2RspRX = final_tx_ts - resp_save[j].rx_ts;
+//      }
+//    }
+//  }
+  for(uint8_t i = 0; i < resp_recv_cnt; i ++) {
+    pFrameTX->Frame.Msg.FinalMsg.FinalTS[i].tFinTX2RspRX = final_tx_ts - resp_save[i].rx_ts;
+  }
+
+  /* Write and send final message. See NOTE 8 below. */
+  dwt_writetxdata(FINAL_MSG_LENGTH, _frameTX.uData, 0); /* Zero offset in TX buffer. */
+  dwt_writetxfctrl(FINAL_MSG_LENGTH, 0, 1); /* Zero offset in TX buffer, ranging. */
+  /* If dwt_starttx() returns an error, abandon this ranging exchange and proceed to the next one. See NOTE 12 below. */
+  if(dwt_starttx(DWT_START_TX_DELAYED) == DWT_SUCCESS) {
+    /* Poll DW1000 until TX frame sent event set. See NOTE 9 below. */
+    while (!(dwt_read32bitreg(SYS_STATUS_ID) & SYS_STATUS_TXFRS))
+    { };
+
+    /* Clear TXFRS event. */
+    dwt_write32bitreg(SYS_STATUS_ID, SYS_STATUS_TXFRS);
+
+    /* Increment frame sequence number after transmission of the final message (modulo 256). */
+    frame_seq_nb ++;
+  }
+}
+
 static void tag_rtls_run(void)
 {
-  _frameTX.Frame.fType = poll_msg;
-  _frameTX.Frame.SepNbr = frame_seq_nb;
-  _frameTX.Frame.Msg.PollMsg.SrcAddr = TagId;
-  /* Write frame data to DW1000 and prepare transmission. See NOTE 8 below. */
-  dwt_writetxdata(POLL_MSG_LENGTH, _frameTX.uData, 0); /* Zero offset in TX buffer. */
-  dwt_writetxfctrl(POLL_MSG_LENGTH, 0, 1); /* Zero offset in TX buffer, ranging. */
-
-  /* Start transmission, indicating that a response is expected so that reception is enabled automatically after the frame is sent and the delay
-   * set by dwt_setrxaftertxdelay() has elapsed. */
-  dwt_starttx(DWT_START_TX_IMMEDIATE | DWT_RESPONSE_EXPECTED);
-
-  /* We assume that the transmission is achieved correctly, poll for reception of a frame or error/timeout. See NOTE 9 below. */
-  while (!((status_reg = dwt_read32bitreg(SYS_STATUS_ID)) & (SYS_STATUS_RXFCG | SYS_STATUS_ALL_RX_TO | SYS_STATUS_ALL_RX_ERR)))
-  { };
-
-  /* Increment frame sequence number after transmission of the poll message (modulo 256). */
-  frame_seq_nb ++;
-
-  if (status_reg & SYS_STATUS_RXFCG) {
-    uint32_t frame_len;
-    /* Clear good RX frame event and TX frame sent in the DW1000 status register. */
-    dwt_write32bitreg(SYS_STATUS_ID, SYS_STATUS_RXFCG | SYS_STATUS_TXFRS);
-
-    /* A frame has been received, read it into the local buffer. */
-    frame_len = dwt_read32bitreg(RX_FINFO_ID) & RX_FINFO_RXFLEN_MASK;
-    if (frame_len <= FRAME_MAX_LENGTH) {
-        dwt_readrxdata(_frameRX.uData, frame_len, 0);
-    }
-    /* Check that the frame is the expected response from the anchor. */
-    if(_frameRX.Frame.stx == DEFAULT_STX && _frameRX.Frame.fType == resp_msg) {
-      uint32_t final_tx_time;
-
-      /* copy dist data from the response frame. */
-      _report_dist = _frameRX.Frame.Msg.RespMsg.Distance.fData;
-      /* Retrieve poll transmission and response reception timestamp. */
-      poll_tx_ts = get_tx_timestamp_u64();
-      resp_rx_ts = get_rx_timestamp_u64();
-      /* Compute final message transmission time. See NOTE 10 below. */
-      final_tx_time = (resp_rx_ts + (RESP_RX_TO_FINAL_TX_DLY_UUS * UUS_TO_DWT_TIME)) >> 8;
-      dwt_setdelayedtrxtime(final_tx_time);
-
-      /* Final TX timestamp is the transmission time we programmed plus the TX antenna delay. */
-      final_tx_ts = (((uint64)(final_tx_time & 0xFFFFFFFEUL)) << 8) + TX_ANT_DLY;
-
-      _frameTX.Frame.SepNbr = frame_seq_nb;
-      _frameTX.Frame.fType = final_msg;
-      _frameTX.Frame.Msg.FinalMsg.TS_Number = 1;
-      _frameTX.Frame.Msg.FinalMsg.FinalTS[0].DstAddr = _frameRX.Frame.Msg.RespMsg.SrcAddr;
-      _frameTX.Frame.Msg.FinalMsg.SrcAddr = TagId;
-      _frameTX.Frame.Msg.FinalMsg.FinalTS[0].tRspRX2PolTX = resp_rx_ts - poll_tx_ts;
-      _frameTX.Frame.Msg.FinalMsg.FinalTS[0].tFinTX2RspRX = final_tx_ts - resp_rx_ts;
-      /* Write and send final message. See NOTE 8 below. */
-      dwt_writetxdata(FINAL_MSG_LENGTH, _frameTX.uData, 0); /* Zero offset in TX buffer. */
-      dwt_writetxfctrl(FINAL_MSG_LENGTH, 0, 1); /* Zero offset in TX buffer, ranging. */
-      /* If dwt_starttx() returns an error, abandon this ranging exchange and proceed to the next one. See NOTE 12 below. */
-      if(dwt_starttx(DWT_START_TX_DELAYED) == DWT_SUCCESS) {
-        /* Poll DW1000 until TX frame sent event set. See NOTE 9 below. */
-        while (!(dwt_read32bitreg(SYS_STATUS_ID) & SYS_STATUS_TXFRS))
-        { };
-
-        /* Clear TXFRS event. */
-        dwt_write32bitreg(SYS_STATUS_ID, SYS_STATUS_TXFRS);
-
-        /* Increment frame sequence number after transmission of the final message (modulo 256). */
-        frame_seq_nb ++;
-      }
-    }
-  } else {
-    /* Clear RX error/timeout events in the DW1000 status register. */
-    dwt_write32bitreg(SYS_STATUS_ID, SYS_STATUS_ALL_RX_TO | SYS_STATUS_ALL_RX_ERR);
-
-    /* Reset RX to properly reinitialise LDE operation. */
-    dwt_rxreset();
-  }
+  poll_send_loop();
+  resp_process(&_frameRX, &_frameTX);
+  final_send(&_frameTX);
 }
 
 /*! ------------------------------------------------------------------------------------------------------------------
@@ -155,6 +234,29 @@ static uint64_t get_rx_timestamp_u64(void)
     return ts;
 }
 
+/*! ------------------------------------------------------------------------------------------------------------------
+ * @fn get_sys_timestamp_u64()
+ *
+ * @brief Get the system time-stamp in a 64-bit variable.
+ *        /!\ This function assumes that length of time-stamps is 40 bits, for both TX and RX!
+ *
+ * @param  none
+ *
+ * @return  64-bit value of the read time-stamp.
+ */
+static uint64_t get_sys_timestamp_u64(void)
+{
+    uint8 ts_tab[5];
+    uint64_t ts = 0;
+    int i;
+    dwt_readsystime(ts_tab);
+    for (i = 4; i >= 0; i--) {
+        ts <<= 8;
+        ts |= ts_tab[i];
+    }
+    return ts;
+}
+
 /**
   * @brief task entry function.
   * @param[in] pvParameter   Pointer that will be used as the parameter for the task.
@@ -173,9 +275,9 @@ void tag_rtls_task_function(void * pvParameter)
   while (true)
   {
     tag_rtls_run();
-    MonitorUpdateDataPos(_report_dist, 0);
+    MonitorUpdateDataPos(resp_save[0].dist, 0);
     /* Delay a task for a given number of ticks */
-    vTaskDelay(50);
+//    vTaskDelay(50);
     /* Tasks must be implemented to never return... */
   }
 }
