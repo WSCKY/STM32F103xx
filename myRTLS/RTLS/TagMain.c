@@ -55,7 +55,7 @@ static void tag_rtls_run(void)
     uint32_t frame_len;
     /* Clear good RX frame event and TX frame sent in the DW1000 status register. */
     dwt_write32bitreg(SYS_STATUS_ID, SYS_STATUS_RXFCG | SYS_STATUS_TXFRS);
-    
+
     /* A frame has been received, read it into the local buffer. */
     frame_len = dwt_read32bitreg(RX_FINFO_ID) & RX_FINFO_RXFLEN_MASK;
     if (frame_len <= FRAME_MAX_LENGTH) {
@@ -79,10 +79,11 @@ static void tag_rtls_run(void)
 
       _frameTX.Frame.SepNbr = frame_seq_nb;
       _frameTX.Frame.fType = final_msg;
-      _frameTX.Frame.Msg.FinalMsg.DstAddr = _frameRX.Frame.Msg.RespMsg.SrcAddr;
+      _frameTX.Frame.Msg.FinalMsg.TS_Number = 1;
+      _frameTX.Frame.Msg.FinalMsg.FinalTS[0].DstAddr = _frameRX.Frame.Msg.RespMsg.SrcAddr;
       _frameTX.Frame.Msg.FinalMsg.SrcAddr = TagId;
-      _frameTX.Frame.Msg.FinalMsg.tRspRX2PolTX = resp_rx_ts - poll_tx_ts;
-      _frameTX.Frame.Msg.FinalMsg.tFinTX2RspRX = final_tx_ts - resp_rx_ts;
+      _frameTX.Frame.Msg.FinalMsg.FinalTS[0].tRspRX2PolTX = resp_rx_ts - poll_tx_ts;
+      _frameTX.Frame.Msg.FinalMsg.FinalTS[0].tFinTX2RspRX = final_tx_ts - resp_rx_ts;
       /* Write and send final message. See NOTE 8 below. */
       dwt_writetxdata(FINAL_MSG_LENGTH, _frameTX.uData, 0); /* Zero offset in TX buffer. */
       dwt_writetxfctrl(FINAL_MSG_LENGTH, 0, 1); /* Zero offset in TX buffer, ranging. */

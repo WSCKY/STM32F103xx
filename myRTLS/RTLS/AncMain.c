@@ -103,9 +103,9 @@ static void anc_rtls_run(void)
           resp_tx_ts = get_tx_timestamp_u64();
           final_rx_ts = get_rx_timestamp_u64();
           
-          Ra = (double)_frameRX.Frame.Msg.FinalMsg.tRspRX2PolTX;
+          Ra = (double)_frameRX.Frame.Msg.FinalMsg.FinalTS[0].tRspRX2PolTX;
           Rb = (double)((uint32_t)final_rx_ts - (uint32_t)resp_tx_ts);
-          Da = (double)_frameRX.Frame.Msg.FinalMsg.tFinTX2RspRX;
+          Da = (double)_frameRX.Frame.Msg.FinalMsg.FinalTS[0].tFinTX2RspRX;
           Db = (double)((uint32_t)resp_tx_ts - (uint32_t)poll_rx_ts);
           _report_dist = (int64_t)((Ra * Rb - Da * Db) / (Ra + Rb + Da + Db)) * DWT_TIME_UNITS * SPEED_OF_LIGHT;
         }
