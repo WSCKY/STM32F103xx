@@ -179,13 +179,16 @@ static void final_send(FrameDataUnion *pFrameTX)
     /* Increment frame sequence number after transmission of the final message (modulo 256). */
     frame_seq_nb ++;
   }
+  /* wait for anchor process. */
+  vTaskDelay(2);
 }
 
 static void tag_rtls_run(void)
 {
   poll_send_loop();
   resp_process(&_frameRX, &_frameTX);
-  final_send(&_frameTX);
+  if(resp_recv_cnt)
+    final_send(&_frameTX);
 }
 
 /*! ------------------------------------------------------------------------------------------------------------------
