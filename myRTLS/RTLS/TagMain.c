@@ -104,7 +104,7 @@ static void resp_process(FrameDataUnion *pFrameRX, FrameDataUnion *pFrameTX)
           if(pFrameRX->Frame.Msg.RespMsg.DstAddr == TagId) { //it's send to me.
             if(resp_recv_cnt < SUPPORT_MAX_ANCHORS) {
               for(uint8_t i = 0; i < resp_recv_cnt; i ++) {
-                if(resp_save[resp_recv_cnt].srcAddr == pFrameRX->Frame.Msg.RespMsg.SrcAddr) {
+                if(resp_save[i].srcAddr == pFrameRX->Frame.Msg.RespMsg.SrcAddr) {
                   goto processed;
                 }
               }
@@ -134,12 +134,12 @@ processed:
     if(recv_cnt) {
       /* Activate reception immediately. */
       dwt_rxenable(DWT_START_RX_IMMEDIATE);
-
+MonitorUpdateDataPos(_GetTimeMeasured(), 3);
       /* Poll for reception of a frame or error/timeout. See NOTE 8 below. */
       while (!((status_reg = dwt_read32bitreg(SYS_STATUS_ID)) & (SYS_STATUS_RXFCG | SYS_STATUS_ALL_RX_TO | SYS_STATUS_ALL_RX_ERR)))
       { };
     }
-    MonitorUpdateDataPos(_GetTimeMeasured(), 3);
+    
   } while(recv_cnt);
 }
 
@@ -286,6 +286,7 @@ void tag_rtls_task_function(void * pvParameter)
   {
     tag_rtls_run();
     MonitorUpdateDataPos(resp_save[0].dist, 0);
+    MonitorUpdateDataPos(resp_save[1].dist, 1);
     /* Delay a task for a given number of ticks */
 //    vTaskDelay(50);
     /* Tasks must be implemented to never return... */
