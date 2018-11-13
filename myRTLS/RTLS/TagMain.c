@@ -86,7 +86,6 @@ static void resp_process(FrameDataUnion *pFrameRX, FrameDataUnion *pFrameTX)
   uint32_t frame_len;
   uint8_t recv_cnt = SUPPORT_MAX_ANCHORS; /* how many times to receive. */
   do {
-    _MeasureTimeStart();
     if (status_reg & SYS_STATUS_RXFCG) {
       /* Clear good RX frame event and TX frame sent in the DW1000 status register. */
       dwt_write32bitreg(SYS_STATUS_ID, SYS_STATUS_RXFCG | SYS_STATUS_TXFRS);
@@ -113,7 +112,7 @@ static void resp_process(FrameDataUnion *pFrameRX, FrameDataUnion *pFrameTX)
               pFrameTX->Frame.Msg.FinalMsg.FinalTS[resp_recv_cnt].tRspRX2PolTX = resp_save[resp_recv_cnt].rx_ts - poll_tx_ts;
               resp_recv_cnt ++;
             } else {
-              break;
+//              break;
             }
           }
         }
@@ -122,8 +121,8 @@ static void resp_process(FrameDataUnion *pFrameRX, FrameDataUnion *pFrameTX)
       /* Clear RX error/timeout events in the DW1000 status register. */
       dwt_write32bitreg(SYS_STATUS_ID, SYS_STATUS_ALL_RX_TO | SYS_STATUS_ALL_RX_ERR);
       /* Reset RX to properly reinitialise LDE operation. */
-      dwt_rxreset();
-      break;
+//      dwt_rxreset();
+//      break;
     }
 processed:
     recv_cnt --;
@@ -131,18 +130,18 @@ processed:
       dwt_setrxtimeout(TAG_PROC_RESP_RX_DLY_UUS);
       /* Activate reception immediately. */
       dwt_rxenable(DWT_START_RX_IMMEDIATE);
-MonitorUpdateDataPos(_GetTimeMeasured(), 3);
+
       /* Poll for reception of a frame or error/timeout. See NOTE 8 below. */
       while (!((status_reg = dwt_read32bitreg(SYS_STATUS_ID)) & (SYS_STATUS_RXFCG | SYS_STATUS_ALL_RX_TO | SYS_STATUS_ALL_RX_ERR)))
       { };
     }
-    
   } while(recv_cnt);
 }
 
 static void final_send(FrameDataUnion *pFrameTX)
 {
   uint32_t final_tx_time;
+  _MeasureTimeStart();
   /* Compute final message transmission time. See NOTE 10 below. */
   final_tx_time = (get_sys_timestamp_u64() + (RESP_RX_TO_FINAL_TX_DLY_UUS * UUS_TO_DWT_TIME)) >> 8;
   dwt_setdelayedtrxtime(final_tx_time);
@@ -168,6 +167,7 @@ static void final_send(FrameDataUnion *pFrameTX)
   /* Write and send final message. See NOTE 8 below. */
   dwt_writetxdata(FINAL_MSG_LENGTH, _frameTX.uData, 0); /* Zero offset in TX buffer. */
   dwt_writetxfctrl(FINAL_MSG_LENGTH, 0, 1); /* Zero offset in TX buffer, ranging. */
+  MonitorUpdateDataPos(_GetTimeMeasured(), 3);
   /* If dwt_starttx() returns an error, abandon this ranging exchange and proceed to the next one. See NOTE 12 below. */
   if(dwt_starttx(DWT_START_TX_DELAYED) == DWT_SUCCESS) {
     /* Poll DW1000 until TX frame sent event set. See NOTE 9 below. */
@@ -190,7 +190,7 @@ static void tag_rtls_run(void)
   resp_process(&_frameRX, &_frameTX);
   if(resp_recv_cnt) {
     final_send(&_frameTX);
-    MonitorUpdateDataPos(resp_recv_cnt, 2);
+    MonitorUpdateDataPos(resp_recv_cnt, 4);
   } else {
 //    MonitorUpdateDataPos(1, 2);
   }
@@ -287,6 +287,8 @@ void tag_rtls_task_function(void * pvParameter)
       MonitorUpdateDataPos(resp_save[0].dist, 0);
     if(resp_recv_cnt >= 2)
       MonitorUpdateDataPos(resp_save[1].dist, 1);
+    if(resp_recv_cnt >= 3)
+      MonitorUpdateDataPos(resp_save[2].dist, 2);
     /* Delay a task for a given number of ticks */
 //    vTaskDelay(50);
     /* Tasks must be implemented to never return... */
