@@ -2,7 +2,7 @@
 
 #if !(INSTANCE_MODE_TAG)
 /* anchor id */
-static uint8_t AncId = 0 & 0x7F;
+static uint8_t AncId = 1 & 0x7F;
 /* alloc static memory to store the RX frame data. */
 static FrameDataUnion _frameRX = {0};
 /* alloc static memory where stored TX frame data. */
@@ -60,12 +60,12 @@ static void anc_rtls_run(void)
       poll_rx_ts = get_rx_timestamp_u64();
 
       /* Set send time for response. See NOTE 9 below. */
-      resp_tx_time = (poll_rx_ts + (POLL_RX_TO_RESP_TX_DLY_UUS * UUS_TO_DWT_TIME)) >> 8;
+      resp_tx_time = (poll_rx_ts + ((POLL_RX_TO_RESP_TX_DLY_UUS + TAG_PROC_RESP_RX_DLY_UUS * AncId) * UUS_TO_DWT_TIME)) >> 8;
       dwt_setdelayedtrxtime(resp_tx_time);
 
       /* Set expected delay and timeout for final message reception. See NOTE 4 and 5 below. */
       dwt_setrxaftertxdelay(RESP_TX_TO_FINAL_RX_DLY_UUS);
-      dwt_setrxtimeout(FINAL_RX_TIMEOUT_UUS);
+      dwt_setrxtimeout(FINAL_RX_TIMEOUT_UUS + TAG_PROC_RESP_RX_DLY_UUS * (SUPPORT_MAX_ANCHORS - AncId - 1));
       
       /* Write and send the response message. See NOTE 10 below.*/
       _frameTX.Frame.SepNbr = frame_seq_nb;
@@ -110,9 +110,9 @@ static void anc_rtls_run(void)
             resp_tx_ts = get_tx_timestamp_u64();
             final_rx_ts = get_rx_timestamp_u64();
 
-            Ra = (double)_frameRX.Frame.Msg.FinalMsg.FinalTS[0].tRspRX2PolTX;
+            Ra = (double)_frameRX.Frame.Msg.FinalMsg.FinalTS[index].tRspRX2PolTX;
             Rb = (double)((uint32_t)final_rx_ts - (uint32_t)resp_tx_ts);
-            Da = (double)_frameRX.Frame.Msg.FinalMsg.FinalTS[0].tFinTX2RspRX;
+            Da = (double)_frameRX.Frame.Msg.FinalMsg.FinalTS[index].tFinTX2RspRX;
             Db = (double)((uint32_t)resp_tx_ts - (uint32_t)poll_rx_ts);
             _report_dist = (int64_t)((Ra * Rb - Da * Db) / (Ra + Rb + Da + Db)) * DWT_TIME_UNITS * SPEED_OF_LIGHT;
           }
