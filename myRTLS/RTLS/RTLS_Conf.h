@@ -29,7 +29,7 @@
 /* This is the delay from the end of the frame transmission to the enable of the receiver, as programmed for the DW1000's wait for response feature. */
 #define RESP_TX_TO_FINAL_RX_DLY_UUS 500
 /* Receive final timeout. See NOTE 5 below. */
-#define FINAL_RX_TIMEOUT_UUS 1300
+#define FINAL_RX_TIMEOUT_UUS 1600
 /* This is the delay from Frame RX timestamp to TX reply timestamp used for calculating/setting the DW1000's delayed TX function. This includes the
  * frame length of approximately 2.66 ms with above configuration. */
 #define RESP_RX_TO_FINAL_TX_DLY_UUS 1000
@@ -38,13 +38,13 @@
 /* This is the delay wait for TAG process the resp message(include resp send time). */
 #define TAG_PROC_RESP_RX_DLY_UUS 400
 
-#define INSTANCE_MODE_TAG              (0)
+#define INSTANCE_MODE_TAG              (1)
 #define SUPPORT_MAX_ANCHORS            (3)
 
 #if (INSTANCE_MODE_TAG)
 #define INST_TAG_ID                    (0 | TAG_ADDR_MASK)
 #else
-#define INST_ANC_ID                    (0 & ANC_ADDR_MASK)
+#define INST_ANC_ID                    (2 & ANC_ADDR_MASK)
 #endif /* (INSTANCE_MODE_TAG) */
 
 #endif /* __RTLS_CONF_H */

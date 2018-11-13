@@ -283,12 +283,15 @@ void tag_rtls_task_function(void * pvParameter)
   while (true)
   {
     tag_rtls_run();
-    if(resp_recv_cnt >= 1)
-      MonitorUpdateDataPos(resp_save[0].dist, 0);
-    if(resp_recv_cnt >= 2)
-      MonitorUpdateDataPos(resp_save[1].dist, 1);
-    if(resp_recv_cnt >= 3)
-      MonitorUpdateDataPos(resp_save[2].dist, 2);
+    for(uint8_t i = 0; i < resp_recv_cnt; i ++) {
+      MonitorUpdateDataPos(resp_save[i].dist, resp_save[i].srcAddr);
+    }
+//    if(resp_recv_cnt >= 1)
+//      MonitorUpdateDataPos(resp_save[0].dist, 0);
+//    if(resp_recv_cnt >= 2)
+//      MonitorUpdateDataPos(resp_save[1].dist, 1);
+//    if(resp_recv_cnt >= 3)
+//      MonitorUpdateDataPos(resp_save[2].dist, 2);
     /* Delay a task for a given number of ticks */
 //    vTaskDelay(50);
     /* Tasks must be implemented to never return... */

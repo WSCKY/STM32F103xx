@@ -63,7 +63,7 @@ static void anc_rtls_run(void)
 
       /* Set expected delay and timeout for final message reception. See NOTE 4 and 5 below. */
       dwt_setrxaftertxdelay(TAG_PROC_RESP_RX_DLY_UUS * (SUPPORT_MAX_ANCHORS - INST_ANC_ID));//(RESP_TX_TO_FINAL_RX_DLY_UUS);
-      dwt_setrxtimeout(FINAL_RX_TIMEOUT_UUS + TAG_PROC_RESP_RX_DLY_UUS * (SUPPORT_MAX_ANCHORS - INST_ANC_ID));
+      dwt_setrxtimeout(FINAL_RX_TIMEOUT_UUS);// + TAG_PROC_RESP_RX_DLY_UUS * (SUPPORT_MAX_ANCHORS - INST_ANC_ID));
 
       /* Write and send the response message. See NOTE 10 below.*/
       _frameTX.Frame.SepNbr = frame_seq_nb;
