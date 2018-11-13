@@ -2,7 +2,7 @@
 
 #if !(INSTANCE_MODE_TAG)
 /* anchor id */
-static uint8_t AncId = 1 & 0x7F;
+static uint8_t AncId = 0 & 0x7F;
 /* alloc static memory to store the RX frame data. */
 static FrameDataUnion _frameRX = {0};
 /* alloc static memory where stored TX frame data. */
@@ -65,8 +65,8 @@ static void anc_rtls_run(void)
 
       /* Set expected delay and timeout for final message reception. See NOTE 4 and 5 below. */
       dwt_setrxaftertxdelay(RESP_TX_TO_FINAL_RX_DLY_UUS);
-      dwt_setrxtimeout(FINAL_RX_TIMEOUT_UUS + TAG_PROC_RESP_RX_DLY_UUS * (SUPPORT_MAX_ANCHORS - AncId - 1));
-      
+      dwt_setrxtimeout(FINAL_RX_TIMEOUT_UUS + TAG_PROC_RESP_RX_DLY_UUS * (SUPPORT_MAX_ANCHORS - AncId));
+
       /* Write and send the response message. See NOTE 10 below.*/
       _frameTX.Frame.SepNbr = frame_seq_nb;
       _frameTX.Frame.fType = resp_msg;
@@ -82,7 +82,7 @@ static void anc_rtls_run(void)
       /* Poll for reception of expected "final" frame or error/timeout. See NOTE 8 below. */
       while (!((status_reg = dwt_read32bitreg(SYS_STATUS_ID)) & (SYS_STATUS_RXFCG | SYS_STATUS_ALL_RX_TO | SYS_STATUS_ALL_RX_ERR)))
       { };
-      
+
       /* Increment frame sequence number after transmission of the response message (modulo 256). */
       frame_seq_nb++;
 
@@ -116,6 +116,10 @@ static void anc_rtls_run(void)
             Db = (double)((uint32_t)resp_tx_ts - (uint32_t)poll_rx_ts);
             _report_dist = (int64_t)((Ra * Rb - Da * Db) / (Ra + Rb + Da + Db)) * DWT_TIME_UNITS * SPEED_OF_LIGHT;
           }
+        } else {
+//          MonitorUpdateDataPos(_frameRX.Frame.fType, 0);
+//          MonitorUpdateDataPos(_frameRX.Frame.Msg.FinalMsg.TS_Number, 1);
+//          MonitorUpdateDataPos(_frameRX.Frame.Msg.FinalMsg.SrcAddr, 2);
         }
       } else {
         /* Clear RX error/timeout events in the DW1000 status register. */
