@@ -67,6 +67,7 @@ static void poll_send_loop(void)
     frame_seq_nb ++;
 
     if (status_reg & SYS_STATUS_RXFCG) {
+//      MonitorUpdateDataPos(0, 1);
       /* Retrieve poll transmission timestamp. */
       poll_tx_ts = get_tx_timestamp_u64();
       dwt_setrxtimeout(5000); /* every anchors has 5ms to send resp msg. */
@@ -76,9 +77,9 @@ static void poll_send_loop(void)
       dwt_write32bitreg(SYS_STATUS_ID, SYS_STATUS_ALL_RX_TO | SYS_STATUS_ALL_RX_ERR);
       /* Reset RX to properly reinitialise LDE operation. */
       dwt_rxreset();
-
+//MonitorUpdateDataPos(1, 1);
       /* Delay a task for a given number of ticks */
-      vTaskDelay(50);
+      vTaskDelay(5);
     }
   }
 }
@@ -88,6 +89,7 @@ static void resp_process(FrameDataUnion *pFrameRX, FrameDataUnion *pFrameTX)
   uint32_t frame_len;
   uint8_t recv_cnt = SUPPORT_MAX_ANCHORS; /* how many times to receive. */
   do {
+    _MeasureTimeStart();
     if (status_reg & SYS_STATUS_RXFCG) {
       /* Clear good RX frame event and TX frame sent in the DW1000 status register. */
       dwt_write32bitreg(SYS_STATUS_ID, SYS_STATUS_RXFCG | SYS_STATUS_TXFRS);
@@ -137,6 +139,7 @@ processed:
       while (!((status_reg = dwt_read32bitreg(SYS_STATUS_ID)) & (SYS_STATUS_RXFCG | SYS_STATUS_ALL_RX_TO | SYS_STATUS_ALL_RX_ERR)))
       { };
     }
+    MonitorUpdateDataPos(_GetTimeMeasured(), 3);
   } while(recv_cnt);
 }
 
@@ -187,8 +190,12 @@ static void tag_rtls_run(void)
 {
   poll_send_loop();
   resp_process(&_frameRX, &_frameTX);
-  if(resp_recv_cnt)
+  if(resp_recv_cnt) {
     final_send(&_frameTX);
+//    MonitorUpdateDataPos(0, 2);
+  } else {
+//    MonitorUpdateDataPos(1, 2);
+  }
 }
 
 /*! ------------------------------------------------------------------------------------------------------------------
