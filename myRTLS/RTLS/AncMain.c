@@ -115,7 +115,7 @@ static void anc_rtls_run(void)
             _report_dist = (int64_t)((Ra * Rb - Da * Db) / (Ra + Rb + Da + Db)) * DWT_TIME_UNITS * SPEED_OF_LIGHT;
           }
         } else {
-
+__nop();
         }
       } else {
         /* Clear RX error/timeout events in the DW1000 status register. */
