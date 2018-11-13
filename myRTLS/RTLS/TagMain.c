@@ -70,7 +70,6 @@ static void poll_send_loop(void)
 //      MonitorUpdateDataPos(0, 1);
       /* Retrieve poll transmission timestamp. */
       poll_tx_ts = get_tx_timestamp_u64();
-      dwt_setrxtimeout(5000); /* every anchors has 5ms to send resp msg. */
       break;
     } else {
       /* Clear RX error/timeout events in the DW1000 status register. */
@@ -131,6 +130,7 @@ static void resp_process(FrameDataUnion *pFrameRX, FrameDataUnion *pFrameTX)
 processed:
     recv_cnt --;
     if(recv_cnt) {
+      dwt_setrxtimeout(TAG_PROC_RESP_RX_DLY_UUS);
       /* Activate reception immediately. */
       dwt_rxenable(DWT_START_RX_IMMEDIATE);
 MonitorUpdateDataPos(_GetTimeMeasured(), 3);
