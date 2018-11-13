@@ -1,8 +1,6 @@
 #include "AncMain.h"
 
 #if !(INSTANCE_MODE_TAG)
-/* anchor id */
-static uint8_t AncId = 0 & 0x7F;
 /* alloc static memory to store the RX frame data. */
 static FrameDataUnion _frameRX = {0};
 /* alloc static memory where stored TX frame data. */
@@ -60,18 +58,18 @@ static void anc_rtls_run(void)
       poll_rx_ts = get_rx_timestamp_u64();
 
       /* Set send time for response. See NOTE 9 below. */
-      resp_tx_time = (poll_rx_ts + ((POLL_RX_TO_RESP_TX_DLY_UUS + TAG_PROC_RESP_RX_DLY_UUS * AncId) * UUS_TO_DWT_TIME)) >> 8;
+      resp_tx_time = (poll_rx_ts + ((POLL_RX_TO_RESP_TX_DLY_UUS + TAG_PROC_RESP_RX_DLY_UUS * INST_ANC_ID) * UUS_TO_DWT_TIME)) >> 8;
       dwt_setdelayedtrxtime(resp_tx_time);
 
       /* Set expected delay and timeout for final message reception. See NOTE 4 and 5 below. */
       dwt_setrxaftertxdelay(RESP_TX_TO_FINAL_RX_DLY_UUS);
-      dwt_setrxtimeout(FINAL_RX_TIMEOUT_UUS + TAG_PROC_RESP_RX_DLY_UUS * (SUPPORT_MAX_ANCHORS - AncId));
+      dwt_setrxtimeout(FINAL_RX_TIMEOUT_UUS + TAG_PROC_RESP_RX_DLY_UUS * (SUPPORT_MAX_ANCHORS - INST_ANC_ID));
 
       /* Write and send the response message. See NOTE 10 below.*/
       _frameTX.Frame.SepNbr = frame_seq_nb;
       _frameTX.Frame.fType = resp_msg;
       _frameTX.Frame.Msg.RespMsg.DstAddr = _frameRX.Frame.Msg.PollMsg.SrcAddr;
-      _frameTX.Frame.Msg.RespMsg.SrcAddr = AncId;
+      _frameTX.Frame.Msg.RespMsg.SrcAddr = INST_ANC_ID;
       _frameTX.Frame.Msg.RespMsg.Distance.fData = _report_dist;
       dwt_writetxdata(RESP_MSG_LENGTH, _frameTX.uData, 0); /* Zero offset in TX buffer. */
       dwt_writetxfctrl(RESP_MSG_LENGTH, 0, 1); /* Zero offset in TX buffer, ranging. */
@@ -99,7 +97,7 @@ static void anc_rtls_run(void)
         if(_frameRX.Frame.stx == DEFAULT_STX && _frameRX.Frame.fType == final_msg) {
           uint8_t index = 0;
           for(index = 0; index < _frameRX.Frame.Msg.FinalMsg.TS_Number; index ++) {
-            if(AncId == _frameRX.Frame.Msg.FinalMsg.FinalTS[index].DstAddr) { /* check if belongs to me. */
+            if(INST_ANC_ID == _frameRX.Frame.Msg.FinalMsg.FinalTS[index].DstAddr) { /* check if belongs to me. */
               break;
             }
           }
@@ -117,9 +115,7 @@ static void anc_rtls_run(void)
             _report_dist = (int64_t)((Ra * Rb - Da * Db) / (Ra + Rb + Da + Db)) * DWT_TIME_UNITS * SPEED_OF_LIGHT;
           }
         } else {
-//          MonitorUpdateDataPos(_frameRX.Frame.fType, 0);
-//          MonitorUpdateDataPos(_frameRX.Frame.Msg.FinalMsg.TS_Number, 1);
-//          MonitorUpdateDataPos(_frameRX.Frame.Msg.FinalMsg.SrcAddr, 2);
+
         }
       } else {
         /* Clear RX error/timeout events in the DW1000 status register. */

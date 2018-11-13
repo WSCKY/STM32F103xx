@@ -4,8 +4,6 @@
 struct { uint8_t srcAddr; float dist; uint64_t rx_ts; } resp_save[SUPPORT_MAX_ANCHORS] = {0};
 uint8_t resp_recv_cnt = 0;
 
-/* tag id */
-static uint8_t TagId = 0 | 0x80;
 /* alloc static memory to store the RX frame data. */
 static FrameDataUnion _frameRX = {0};
 /* alloc static memory where stored TX frame data. */
@@ -45,7 +43,7 @@ static void poll_send_loop(void)
   dwt_setrxaftertxdelay(POLL_TX_TO_RESP_RX_DLY_UUS);
   dwt_setrxtimeout(65000); // Maximum value timeout with DW1000 is 65ms
   _frameTX.Frame.fType = poll_msg;
-  _frameTX.Frame.Msg.PollMsg.SrcAddr = TagId;
+  _frameTX.Frame.Msg.PollMsg.SrcAddr = INST_TAG_ID;
 
   resp_recv_cnt = 0; /* reset resp msg recv counter. */
 
@@ -100,7 +98,7 @@ static void resp_process(FrameDataUnion *pFrameRX, FrameDataUnion *pFrameTX)
 
         /* Check that the frame is the expected response from the anchor. */
         if(pFrameRX->Frame.stx == DEFAULT_STX && pFrameRX->Frame.fType == resp_msg) {
-          if(pFrameRX->Frame.Msg.RespMsg.DstAddr == TagId) { //it's send to me.
+          if(pFrameRX->Frame.Msg.RespMsg.DstAddr == INST_TAG_ID) { //it's send to me.
             if(resp_recv_cnt < SUPPORT_MAX_ANCHORS) {
               for(uint8_t i = 0; i < resp_recv_cnt; i ++) {
                 if(resp_save[i].srcAddr == pFrameRX->Frame.Msg.RespMsg.SrcAddr) {
@@ -154,7 +152,7 @@ static void final_send(FrameDataUnion *pFrameTX)
 
   pFrameTX->Frame.SepNbr = frame_seq_nb;
   pFrameTX->Frame.fType = final_msg;
-  pFrameTX->Frame.Msg.FinalMsg.SrcAddr = TagId;
+  pFrameTX->Frame.Msg.FinalMsg.SrcAddr = INST_TAG_ID;
   pFrameTX->Frame.Msg.FinalMsg.TS_Number = resp_recv_cnt;// + 1;
 //  for(uint8_t i = 0; i < resp_recv_cnt; i ++) {
 //    for(uint8_t j = 0; j < resp_recv_cnt; j ++) {

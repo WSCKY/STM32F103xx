@@ -4,11 +4,11 @@
 #include "SysConfig.h"
 
 #define ANC_ADDR_DEFAULT               (0x0)
-
+#define ANC_ADDR_MASK                  (0x7F)
 #define IS_ANC_ADDR(x)                 (!((x) & 0x80))
 
 #define TAG_ADDR_DEFAULT               (0x80)
-
+#define TAG_ADDR_MASK                  (0x80)
 #define IS_TAG_ADDR(x)                 ((x) & 0x80)
 
 /*Should be accurately calculated during calibration*/
@@ -38,7 +38,13 @@
 /* This is the delay wait for TAG process the resp message(include resp send time). */
 #define TAG_PROC_RESP_RX_DLY_UUS 400
 
-#define INSTANCE_MODE_TAG              (0)
+#define INSTANCE_MODE_TAG              (1)
 #define SUPPORT_MAX_ANCHORS            (2)
+
+#if (INSTANCE_MODE_TAG)
+#define INST_TAG_ID                    (0 | TAG_ADDR_MASK)
+#else
+#define INST_ANC_ID                    (0 & ANC_ADDR_MASK)
+#endif /* (INSTANCE_MODE_TAG) */
 
 #endif /* __RTLS_CONF_H */
