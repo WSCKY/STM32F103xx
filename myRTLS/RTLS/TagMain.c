@@ -112,7 +112,6 @@ static void resp_process(FrameDataUnion *pFrameRX, FrameDataUnion *pFrameTX)
               resp_save[resp_recv_cnt].dist = pFrameRX->Frame.Msg.RespMsg.Distance.fData;
               resp_save[resp_recv_cnt].rx_ts = get_rx_timestamp_u64(); /* Retrieve response reception timestamp. */
 
-              pFrameTX->Frame.Msg.FinalMsg.TS_Number = resp_recv_cnt + 1;
               pFrameTX->Frame.Msg.FinalMsg.FinalTS[resp_recv_cnt].DstAddr = pFrameRX->Frame.Msg.RespMsg.SrcAddr;
               pFrameTX->Frame.Msg.FinalMsg.FinalTS[resp_recv_cnt].tRspRX2PolTX = resp_save[resp_recv_cnt].rx_ts - poll_tx_ts;
               resp_recv_cnt ++;
@@ -156,6 +155,7 @@ static void final_send(FrameDataUnion *pFrameTX)
   pFrameTX->Frame.SepNbr = frame_seq_nb;
   pFrameTX->Frame.fType = final_msg;
   pFrameTX->Frame.Msg.FinalMsg.SrcAddr = TagId;
+  pFrameTX->Frame.Msg.FinalMsg.TS_Number = resp_recv_cnt;// + 1;
 //  for(uint8_t i = 0; i < resp_recv_cnt; i ++) {
 //    for(uint8_t j = 0; j < resp_recv_cnt; j ++) {
 //      if(pFrameTX->Frame.Msg.FinalMsg.FinalTS[i].DstAddr == resp_save[j].srcAddr) {
@@ -192,7 +192,7 @@ static void tag_rtls_run(void)
   resp_process(&_frameRX, &_frameTX);
   if(resp_recv_cnt) {
     final_send(&_frameTX);
-//    MonitorUpdateDataPos(0, 2);
+    MonitorUpdateDataPos(resp_recv_cnt, 2);
   } else {
 //    MonitorUpdateDataPos(1, 2);
   }
@@ -285,8 +285,10 @@ void tag_rtls_task_function(void * pvParameter)
   while (true)
   {
     tag_rtls_run();
-    MonitorUpdateDataPos(resp_save[0].dist, 0);
-    MonitorUpdateDataPos(resp_save[1].dist, 1);
+    if(resp_recv_cnt >= 1)
+      MonitorUpdateDataPos(resp_save[0].dist, 0);
+    if(resp_recv_cnt >= 2)
+      MonitorUpdateDataPos(resp_save[1].dist, 1);
     /* Delay a task for a given number of ticks */
 //    vTaskDelay(50);
     /* Tasks must be implemented to never return... */
