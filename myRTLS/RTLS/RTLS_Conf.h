@@ -23,6 +23,6 @@
 #define SPEED_OF_LIGHT 299702547
 
 #define INSTANCE_MODE_TAG              (0)
-#define SUPPORT_MAX_ANCHORS            (1)
+#define SUPPORT_MAX_ANCHORS            (2)
 
 #endif /* __RTLS_CONF_H */
