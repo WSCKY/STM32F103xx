@@ -23,6 +23,10 @@ static uint64_t final_tx_ts;
 static uint16_t FrameRate = 0;
 static uint16_t FrameCounter = 0;
 
+#if !(DATA_PRINT_MONITOR)
+static CommPackageDef TxPacket = {Header1, Header2};
+#endif /* !(DATA_PRINT_MONITOR) */
+
 /* Declaration of static functions. */
 static uint64_t get_tx_timestamp_u64(void);
 static uint64_t get_rx_timestamp_u64(void);
@@ -141,7 +145,6 @@ processed:
 static void final_send(FrameDataUnion *pFrameTX)
 {
   uint32_t final_tx_time;
-//  _MeasureTimeStart();
   /* Compute final message transmission time. See NOTE 10 below. */
   final_tx_time = (get_sys_timestamp_u64() + (RESP_RX_TO_FINAL_TX_DLY_UUS * UUS_TO_DWT_TIME)) >> 8;
   dwt_setdelayedtrxtime(final_tx_time);
@@ -167,7 +170,6 @@ static void final_send(FrameDataUnion *pFrameTX)
   /* Write and send final message. See NOTE 8 below. */
   dwt_writetxdata(FINAL_MSG_LENGTH, _frameTX.uData, 0); /* Zero offset in TX buffer. */
   dwt_writetxfctrl(FINAL_MSG_LENGTH, 0, 1); /* Zero offset in TX buffer, ranging. */
-//  MonitorUpdateDataPos(_GetTimeMeasured(), 3);
   /* If dwt_starttx() returns an error, abandon this ranging exchange and proceed to the next one. See NOTE 12 below. */
   if(dwt_starttx(DWT_START_TX_DELAYED) == DWT_SUCCESS) {
     /* Poll DW1000 until TX frame sent event set. See NOTE 9 below. */
@@ -273,6 +275,11 @@ void tag_rtls_task_function(void * pvParameter)
 {
   UNUSED_PARAMETER(pvParameter);
   dwt_setleds(DWT_LEDS_ENABLE);
+#if !(DATA_PRINT_MONITOR)
+  TxPacket.Packet.type = TYPE_DIST_GROUP_Resp;
+  TxPacket.Packet.len = sizeof(DistGroupDataRespDef) + 2;
+  TxPacket.Packet.PacketData.DistGroup.TagAddr = INST_TAG_ID;
+#endif /* !(DATA_PRINT_MONITOR) */
   rtls_init();
   /* Set expected response's delay and timeout. 
    * As this example only handles one incoming frame with always the same delay and timeout, those values can be set here once for all. */
@@ -283,11 +290,21 @@ void tag_rtls_task_function(void * pvParameter)
   while (true)
   {
     tag_rtls_run();
+#if (DATA_PRINT_MONITOR)
     for(uint8_t i = 0; i < resp_recv_cnt; i ++) {
       MonitorUpdateDataPos(resp_save[i].dist, resp_save[i].srcAddr);
     }
     MonitorUpdateDataPos(resp_recv_cnt, SUPPORT_MAX_ANCHORS);
     MonitorUpdateDataPos(FrameRate, 4);
+#else
+    TxPacket.Packet.PacketData.DistGroup.DistNum = resp_recv_cnt;
+    TxPacket.Packet.PacketData.DistGroup.FrameRate = FrameRate;
+    for(uint8_t i = 0; i < resp_recv_cnt; i ++) {
+      TxPacket.Packet.PacketData.DistGroup.DistGroup[i].AncAddr = resp_save[i].srcAddr;
+      TxPacket.Packet.PacketData.DistGroup.DistGroup[i].Distance = resp_save[i].dist;
+    }
+    SendTxPacket(&TxPacket);
+#endif /* (DATA_PRINT_MONITOR) */
     /* Tasks must be implemented to never return... */
   }
 }

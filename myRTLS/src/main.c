@@ -62,7 +62,9 @@ static dwt_config_t config = {
 
 TaskHandle_t  rtls_task_handle;         /**< Reference to SS TWR Initiator FreeRTOS task. */
 TaskHandle_t  led_toggle_task_handle;   /**< Reference to LED0 toggling FreeRTOS task. */
+#if (DATA_PRINT_MONITOR)
 TaskHandle_t  send_data_task_handle;    /**< Reference to data sending FreeRTOS task. */
+#endif /* (DATA_PRINT_MONITOR) */
 TimerHandle_t led_toggle_timer_handle;  /**< Reference to LED1 toggling FreeRTOS timer. */
 #endif
 
@@ -84,6 +86,7 @@ static void led_toggle_task_function (void * pvParameter)
   }
 }
 
+#if (DATA_PRINT_MONITOR)
 static void send_data_task_function (void * pvParameter)
 {
   UNUSED_PARAMETER(pvParameter);
@@ -96,6 +99,7 @@ static void send_data_task_function (void * pvParameter)
     /* Tasks must be implemented to never return... */
   }
 }
+#endif /* (DATA_PRINT_MONITOR) */
 
 /**@brief The function to call when the LED1 FreeRTOS timer expires.
  *
@@ -143,10 +147,10 @@ int main(void)
   #ifdef USE_FREERTOS
     /* Create task for LED0 blinking with priority set to 1 */
     UNUSED_VARIABLE(xTaskCreate(led_toggle_task_function, "LED0", configMINIMAL_STACK_SIZE + 200, NULL, 1, &led_toggle_task_handle));
-
+#if (DATA_PRINT_MONITOR)
     /* Create task for send data to monitor with priority set to 2 */
     UNUSED_VARIABLE(xTaskCreate(send_data_task_function, "Monitor", configMINIMAL_STACK_SIZE + 200, NULL, 2, &send_data_task_handle));
-    
+#endif /* (DATA_PRINT_MONITOR) */
     /* Start timer for LED1 blinking */
     led_toggle_timer_handle = xTimerCreate( "LED1", TIMER_PERIOD * 1000, pdTRUE, NULL, led_toggle_timer_callback);
     UNUSED_VARIABLE(xTimerStart(led_toggle_timer_handle, 0));
