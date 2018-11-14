@@ -10,7 +10,11 @@
 #include "deca_regs.h"
 #include "port_platform.h"
 
+#if (DATA_PRINT_MONITOR)
 #include "DataMonitor.h"
+#else
+#include "HostRespTask.h"
+#endif /* (DATA_PRINT_MONITOR) */
 
 #include "FreeRTOS.h"
 #include "task.h"

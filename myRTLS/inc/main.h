@@ -19,17 +19,14 @@
 #include "sdk_config.h"
 
 #include "MainCtrl.h"
-#if (DEBUG_MODE)
+#if (DATA_PRINT_MONITOR)
 #include "DataMonitor.h"
 #else
-
-#endif
+#include "HostRespTask.h"
+#endif /* (DATA_PRINT_MONITOR) */
 
 #include "TagMain.h"
 #include "AncMain.h"
-
-#include "HostRespTask.h"
-#include "DataMonitor.h"
 
 #include "usbd_cdc_core.h"
 #include "usbd_usr.h"
