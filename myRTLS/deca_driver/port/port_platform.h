@@ -34,7 +34,8 @@ extern "C" {
 #include "TimerCounter.h"
 #include "deca_device_api.h"
 
-#include "DataTypes.h"
+#define true                           (0x1)
+#define false                          (0x0)
 
 /*
 
