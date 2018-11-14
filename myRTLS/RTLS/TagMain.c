@@ -1,8 +1,6 @@
 #include "TagMain.h"
 
 #if (INSTANCE_MODE_TAG)
-struct { uint8_t srcAddr; float dist; uint64_t rx_ts; } resp_save[SUPPORT_MAX_ANCHORS] = {0};
-uint8_t resp_recv_cnt = 0;
 
 /* alloc static memory to store the RX frame data. */
 static FrameDataUnion _frameRX = {0};
@@ -12,11 +10,14 @@ static FrameDataUnion _frameTX = {0};
 static uint8_t frame_seq_nb = 0;
 /* Hold copy of status register state here for reference so that it can be examined at a debug breakpoint. */
 static uint32_t status_reg = 0;
+/* Valid resp msg counter */
+static uint8_t resp_recv_cnt = 0;
+/* Store the information report by resp msg. */
+struct { uint8_t srcAddr; float dist; uint64_t rx_ts; } resp_save[SUPPORT_MAX_ANCHORS] = {0};
 
 /* Time-stamps of frames transmission/reception, expressed in device time units.
  * As they are 40-bit wide, we need to define a 64-bit int type to handle them. */
 static uint64_t poll_tx_ts;
-//static uint64_t resp_rx_ts[SUPPORT_MAX_ANCHORS];
 static uint64_t final_tx_ts;
 
 /* Declaration of static functions. */
@@ -65,7 +66,6 @@ static void poll_send_loop(void)
     frame_seq_nb ++;
 
     if (status_reg & SYS_STATUS_RXFCG) {
-//      MonitorUpdateDataPos(0, 1);
       /* Retrieve poll transmission timestamp. */
       poll_tx_ts = get_tx_timestamp_u64();
       break;
@@ -74,7 +74,6 @@ static void poll_send_loop(void)
       dwt_write32bitreg(SYS_STATUS_ID, SYS_STATUS_ALL_RX_TO | SYS_STATUS_ALL_RX_ERR);
       /* Reset RX to properly reinitialise LDE operation. */
       dwt_rxreset();
-//MonitorUpdateDataPos(1, 1);
       /* Delay a task for a given number of ticks */
       vTaskDelay(5);
     }
@@ -113,7 +112,7 @@ static void resp_process(FrameDataUnion *pFrameRX, FrameDataUnion *pFrameTX)
               pFrameTX->Frame.Msg.FinalMsg.FinalTS[resp_recv_cnt].tRspRX2PolTX = resp_save[resp_recv_cnt].rx_ts - poll_tx_ts;
               resp_recv_cnt ++;
             } else {
-//              break;
+
             }
           }
         }
@@ -121,9 +120,6 @@ static void resp_process(FrameDataUnion *pFrameRX, FrameDataUnion *pFrameTX)
     } else {
       /* Clear RX error/timeout events in the DW1000 status register. */
       dwt_write32bitreg(SYS_STATUS_ID, SYS_STATUS_ALL_RX_TO | SYS_STATUS_ALL_RX_ERR);
-      /* Reset RX to properly reinitialise LDE operation. */
-//      dwt_rxreset();
-//      break;
     }
 processed:
     recv_cnt --;
@@ -142,7 +138,7 @@ processed:
 static void final_send(FrameDataUnion *pFrameTX)
 {
   uint32_t final_tx_time;
-  _MeasureTimeStart();
+//  _MeasureTimeStart();
   /* Compute final message transmission time. See NOTE 10 below. */
   final_tx_time = (get_sys_timestamp_u64() + (RESP_RX_TO_FINAL_TX_DLY_UUS * UUS_TO_DWT_TIME)) >> 8;
   dwt_setdelayedtrxtime(final_tx_time);
@@ -153,7 +149,7 @@ static void final_send(FrameDataUnion *pFrameTX)
   pFrameTX->Frame.SepNbr = frame_seq_nb;
   pFrameTX->Frame.fType = final_msg;
   pFrameTX->Frame.Msg.FinalMsg.SrcAddr = INST_TAG_ID;
-  pFrameTX->Frame.Msg.FinalMsg.TS_Number = resp_recv_cnt;// + 1;
+  pFrameTX->Frame.Msg.FinalMsg.TS_Number = resp_recv_cnt;
 //  for(uint8_t i = 0; i < resp_recv_cnt; i ++) {
 //    for(uint8_t j = 0; j < resp_recv_cnt; j ++) {
 //      if(pFrameTX->Frame.Msg.FinalMsg.FinalTS[i].DstAddr == resp_save[j].srcAddr) {
@@ -168,7 +164,7 @@ static void final_send(FrameDataUnion *pFrameTX)
   /* Write and send final message. See NOTE 8 below. */
   dwt_writetxdata(FINAL_MSG_LENGTH, _frameTX.uData, 0); /* Zero offset in TX buffer. */
   dwt_writetxfctrl(FINAL_MSG_LENGTH, 0, 1); /* Zero offset in TX buffer, ranging. */
-  MonitorUpdateDataPos(_GetTimeMeasured(), 3);
+//  MonitorUpdateDataPos(_GetTimeMeasured(), 3);
   /* If dwt_starttx() returns an error, abandon this ranging exchange and proceed to the next one. See NOTE 12 below. */
   if(dwt_starttx(DWT_START_TX_DELAYED) == DWT_SUCCESS) {
     /* Poll DW1000 until TX frame sent event set. See NOTE 9 below. */
@@ -191,9 +187,8 @@ static void tag_rtls_run(void)
   resp_process(&_frameRX, &_frameTX);
   if(resp_recv_cnt) {
     final_send(&_frameTX);
-    MonitorUpdateDataPos(resp_recv_cnt, 4);
   } else {
-//    MonitorUpdateDataPos(1, 2);
+
   }
 }
 
@@ -287,14 +282,7 @@ void tag_rtls_task_function(void * pvParameter)
     for(uint8_t i = 0; i < resp_recv_cnt; i ++) {
       MonitorUpdateDataPos(resp_save[i].dist, resp_save[i].srcAddr);
     }
-//    if(resp_recv_cnt >= 1)
-//      MonitorUpdateDataPos(resp_save[0].dist, 0);
-//    if(resp_recv_cnt >= 2)
-//      MonitorUpdateDataPos(resp_save[1].dist, 1);
-//    if(resp_recv_cnt >= 3)
-//      MonitorUpdateDataPos(resp_save[2].dist, 2);
-    /* Delay a task for a given number of ticks */
-//    vTaskDelay(50);
+    MonitorUpdateDataPos(resp_recv_cnt, SUPPORT_MAX_ANCHORS);
     /* Tasks must be implemented to never return... */
   }
 }
