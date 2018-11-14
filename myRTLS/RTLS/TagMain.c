@@ -104,6 +104,7 @@ static void resp_process(FrameDataUnion *pFrameRX, FrameDataUnion *pFrameTX)
                   goto processed;
                 }
               }
+              recv_cnt = SUPPORT_MAX_ANCHORS - pFrameRX->Frame.Msg.RespMsg.SrcAddr;
               resp_save[resp_recv_cnt].srcAddr = pFrameRX->Frame.Msg.RespMsg.SrcAddr; /* who report it. */
               resp_save[resp_recv_cnt].dist = pFrameRX->Frame.Msg.RespMsg.Distance.fData;
               resp_save[resp_recv_cnt].rx_ts = get_rx_timestamp_u64(); /* Retrieve response reception timestamp. */
