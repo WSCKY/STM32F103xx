@@ -56,7 +56,7 @@ static dwt_config_t config = {
 
 
 #define TASK_DELAY        200           /**< Task delay. Delays a LED0 task for 200 ms */
-#define TIMER_PERIOD      2000          /**< Timer period. LED1 timer will expire after 1000 ms */
+#define TIMER_PERIOD      1             /**< Timer period. for led toggle timer. (unit:s) */
 
 #ifdef USE_FREERTOS
 
@@ -105,6 +105,9 @@ static void led_toggle_timer_callback (void * pvParameter)
 {
   UNUSED_PARAMETER(pvParameter);
   LED2_TOG();
+#if (INSTANCE_MODE_TAG)
+  FrameRateCountCallback(TIMER_PERIOD);
+#endif /* (INSTANCE_MODE_TAG) */
 }
 #else
 
@@ -145,7 +148,7 @@ int main(void)
     UNUSED_VARIABLE(xTaskCreate(send_data_task_function, "Monitor", configMINIMAL_STACK_SIZE + 200, NULL, 2, &send_data_task_handle));
     
     /* Start timer for LED1 blinking */
-    led_toggle_timer_handle = xTimerCreate( "LED1", TIMER_PERIOD, pdTRUE, NULL, led_toggle_timer_callback);
+    led_toggle_timer_handle = xTimerCreate( "LED1", TIMER_PERIOD * 1000, pdTRUE, NULL, led_toggle_timer_callback);
     UNUSED_VARIABLE(xTimerStart(led_toggle_timer_handle, 0));
 #if (INSTANCE_MODE_TAG)
     /* Create task for RTLS set to 2 */

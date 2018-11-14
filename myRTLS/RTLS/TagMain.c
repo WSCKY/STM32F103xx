@@ -20,6 +20,9 @@ struct { uint8_t srcAddr; float dist; uint64_t rx_ts; } resp_save[SUPPORT_MAX_AN
 static uint64_t poll_tx_ts;
 static uint64_t final_tx_ts;
 
+static uint16_t FrameRate = 0;
+static uint16_t FrameCounter = 0;
+
 /* Declaration of static functions. */
 static uint64_t get_tx_timestamp_u64(void);
 static uint64_t get_rx_timestamp_u64(void);
@@ -187,6 +190,7 @@ static void tag_rtls_run(void)
   resp_process(&_frameRX, &_frameTX);
   if(resp_recv_cnt) {
     final_send(&_frameTX);
+    FrameCounter ++;
   } else {
 
   }
@@ -283,8 +287,15 @@ void tag_rtls_task_function(void * pvParameter)
       MonitorUpdateDataPos(resp_save[i].dist, resp_save[i].srcAddr);
     }
     MonitorUpdateDataPos(resp_recv_cnt, SUPPORT_MAX_ANCHORS);
+    MonitorUpdateDataPos(FrameRate, 4);
     /* Tasks must be implemented to never return... */
   }
+}
+
+void FrameRateCountCallback(uint8_t seconds)
+{
+  FrameRate = FrameCounter / seconds;
+  FrameCounter = 0;
 }
 
 /*****************************************************************************************************************************************************

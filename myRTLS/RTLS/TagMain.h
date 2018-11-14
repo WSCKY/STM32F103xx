@@ -16,6 +16,7 @@
 #include "task.h"
 
 void tag_rtls_task_function(void * pvParameter);
+void FrameRateCountCallback(uint8_t seconds);
 
 #endif /* (INSTANCE_MODE_TAG) */
 
